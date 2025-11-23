@@ -26,7 +26,7 @@
 
 using namespace threepp;
 
-constexpr float PI = 3.1415927f;
+constexpr float PI = 3.1415927f; // approximate value of pi toavoid math PI errors
 
 int main() {
     // File log to diagnose startup
@@ -38,11 +38,11 @@ int main() {
     Canvas canvas(params);
     logFile << "[init] canvas created" << std::endl;
     Renderer renderer(canvas);
-    renderer.setClearColor(Color(0.5f, 0.7f, 1.0f)); // Sky blue
+    renderer.setClearColor(Color(0.5f, 0.7f, 1.0f)); // Set the sky blue
 
     World world;
 
-    // Add lighting so track models aren't black (mainly so we can see the tracks move)
+    // Add lighting so track models aren't black (mainly so we can see the tracks move as the models have minute textures)
     auto ambientLight = AmbientLight::create(Color::white, 0.6f);
     world.scene().add(ambientLight);
     

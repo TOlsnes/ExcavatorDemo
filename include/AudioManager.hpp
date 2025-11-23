@@ -4,6 +4,7 @@
 #include <threepp/audio/Audio.hpp>
 #include <memory>
 #include <string>
+#include "Settings.hpp"
 
 class AudioManager {
 public:
@@ -23,7 +24,7 @@ public:
     void startEngine();  // Play startup then transition to idle
     void updateEngine(float dt);  // Call each frame to handle transitions
     void setIdleVolume(float volume);
-    bool isStartupComplete() const { return startupComplete_; }
+    bool isStartupComplete() const { return Settings::startupComplete_; }
     
     // Hydraulics control (with volume hierarchy: boom > stick > bucket)
     void playHydraulics(float volume);  // For upward movement
@@ -56,9 +57,6 @@ private:
     std::unique_ptr<threepp::Audio> dumpSound_;
     std::unique_ptr<threepp::Audio> collisionSound_;
     std::unique_ptr<threepp::Audio> coinSound_;
-    
-    bool startupComplete_ = false;
-    float effectsVolume_ = 1.0f;
 };
 
 #endif // AUDIOMANAGER_HPP

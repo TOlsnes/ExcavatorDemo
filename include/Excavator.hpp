@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <threepp/math/Vector3.hpp>
 #include <threepp/objects/Group.hpp>
+#include "Settings.hpp"
 
 class ParticleSystem;
 
@@ -13,7 +14,6 @@ namespace threepp {
 class Canvas;
 class Scene;
 class Object3D;
-class Group;
 }
 
 /**
@@ -96,23 +96,23 @@ public:
     void nudgeBucketPivotZ(float dz);  // Move the bucket pivot itself along Z
 
     // --- Getters ---
-    float getTurretYaw() const { return turretYaw_; }
-    float getBoomAngle() const { return boomAngle_; }
-    float getStickAngle() const { return stickAngle_; }
-    float getBucketAngle() const { return bucketAngle_; }
+    float getTurretYaw() const { return Settings::turretYaw_; }
+    float getBoomAngle() const { return Settings::boomAngle_; }
+    float getStickAngle() const { return Settings::stickAngle_; }
+    float getBucketAngle() const { return Settings::bucketAngle_; }
 
     // Access root node (for positioning the whole excavator in world)
     threepp::Object3D* root();
     
     // Access mesh parts for collision visualization
     threepp::Object3D* baseMesh() { return baseMesh_.get(); }
-    threepp::Object3D* bodyMesh() { return bodyMesh_.get(); }
+    threepp::Object3D* bodyMesh() { return static_cast<threepp::Object3D*>(bodyMesh_.get()); }
     threepp::Object3D* boomMesh() { return arm1Mesh_.get(); }
     threepp::Object3D* stickMesh() { return arm2Mesh_.get(); }
     threepp::Object3D* bucketMesh() { return bucketMesh_.get(); }
     
     // Bucket load state for dig/dump gameplay
-    bool isBucketLoaded() const { return bucketLoaded_; }
+    bool isBucketLoaded() const { return Settings::bucketLoaded_; }
     void loadBucket();
     void unloadBucket();
     
@@ -145,54 +145,7 @@ private:
     std::shared_ptr<threepp::Object3D> leftTrackPivot_;
     std::shared_ptr<threepp::Object3D> rightTrackPivot_;
     std::shared_ptr<threepp::Object3D> turretPivot_;
-    std::shared_ptr<threepp::Object3D> boomPivot_;
-    std::shared_ptr<threepp::Object3D> stickPivot_;
-    std::shared_ptr<threepp::Object3D> bucketPivot_;
-
-    // Track animation state
-    float leftTrackSpeed_{0.f};   // m/s
-    float rightTrackSpeed_{0.f};
-    float leftTrackDist_{0.f};    // accumulated distance
-    float rightTrackDist_{0.f};
-    int leftTrackFrame_{0};       // 0,1,2
-    int rightTrackFrame_{0};
-    float trackCircumference_{0.3f}; // shorter circumference for more visible animation
-
-    // Joint angles (radians)
-    float turretYaw_{0.f};
-    float boomAngle_{0.f};
-    float stickAngle_{0.f};
-    float bucketAngle_{0.f};
-
-    // Rotation limits (radians) for articulated joints
-    float boomMin_{-0.2f};
-    float boomMax_{0.2f};
-    float stickMin_{-0.5f};
-    float stickMax_{1.2f};
-    float bucketMin_{0.0f};
-    float bucketMax_{0.5f};
-
-    // Alignment flags and small offsets for runtime tweaking
-    bool stickUseMaxEnd_{false};
-    bool bucketUseMaxEnd_{false};
-    float stickNudgeZ_{0.f};
-    float bucketNudgeZ_{0.f};
-
-    // Movement & acceleration
-    float targetLeftTrackSpeed_{0.f};
-    float targetRightTrackSpeed_{0.f};
-    float acceleration_{1.5f};      // m/s^2 accelerate
-    float deceleration_{3.0f};      // m/s^2 decelerate/brake
-    float baseYaw_{0.f};            // yaw of whole excavator (radians, around vertical)
-    float trackWidth_{1.0f};        // distance between tracks (meters) for turning calc
-    float baseRadius_{0.8f};        // approximate radius for base/tracks for obstacle collision
 
     // Particle system for dust effects
     ParticleSystem* particleSystem_{nullptr};
-    float particleSpawnTimer_{0.f};
-    const float particleSpawnInterval_{0.05f}; // spawn every 50ms when moving
-    const float speedThresholdForParticles_{0.3f}; // min speed to spawn particles
-    
-    // Bucket load state for dig/dump gameplay
-    bool bucketLoaded_{false};
 };

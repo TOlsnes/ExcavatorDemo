@@ -6,6 +6,7 @@
 #include <threepp/materials/MeshStandardMaterial.hpp>
 #include <vector>
 #include <memory>
+#include "Settings.hpp"
 
 class TrackMarkManager {
 public:
@@ -15,10 +16,10 @@ public:
     void update(float dt, const threepp::Vector3& excavatorPos);
 
     // Adjust spawning behavior
-    void setSpawnDistance(float d) { spawnDistance_ = d; }
-    void setLifetime(float seconds) { lifetime_ = seconds; }
-    void setMarkDimensions(float width, float length) { markWidth_ = width; markLength_ = length; }
-    void setTrackSeparation(float sep) { trackSeparation_ = sep; }
+    void setSpawnDistance(float d) { Settings::spawnDistance_ = d; }
+    void setLifetime(float seconds) { Settings::lifetime_ = seconds; }
+    void setMarkDimensions(float width, float length) { Settings::markWidth_ = width; Settings::markLength_ = length; }
+    void setTrackSeparation(float sep) { Settings::trackSeparation_ = sep; }
 
 private:
     struct Mark {
@@ -30,12 +31,5 @@ private:
     std::vector<Mark> marks_;
     threepp::Vector3 lastSpawnPos_{};
     bool hasSpawnedFirst_ = false;
-    float distanceAccumulator_ = 0.f;
-    float spawnDistance_ = 0.6f; // meters between marks
-    float lifetime_ = 3.f;       // seconds a mark persists
-    float markWidth_ = 0.25f;    // default individual track imprint width (smaller)
-    float markLength_ = 0.25f;   // default imprint length along travel (smaller)
-    float trackSeparation_ = 1.0f; // distance between track centers
-
     void spawnMark(const threepp::Vector3& pos, const threepp::Vector3& forwardDir);
 };

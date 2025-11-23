@@ -25,7 +25,7 @@ FetchContent_Declare(
 )
 FetchContent_GetProperties(imgui)
 if (NOT imgui_POPULATED)
-    FetchContent_Populate(imgui)
+    FetchContent_MakeAvailable(imgui)
     add_library(imgui STATIC
             ${imgui_SOURCE_DIR}/imgui.cpp
             ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -59,7 +59,8 @@ add_executable(main
 
 target_include_directories(main
         PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include        
+        $<TARGET_PROPERTY:threepp::threepp,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries(main PRIVATE threepp::threepp)
