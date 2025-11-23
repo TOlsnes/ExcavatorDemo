@@ -1,0 +1,67 @@
+# Build and IDE folders
+build/
+cmake-build-debug/
+CMakeFiles/
+*.vcxproj*
+*.sln
+*.ilk
+*.pdb
+*.exe
+*.obj
+*.lib
+*.log
+*.cache
+*.user
+*.ipch
+*.aps
+*.ncb
+*.opendb
+*.tlog
+*.idb
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.VC.opendb
+
+# CMake generated files
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# Third-party dependencies
+_deps/
+
+# Editor files
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Misc
+*.bak
+*.tmp
+*.swp
+*.swo
+*.log
+*.out
+
+# Ignore models if you don't want to track them
+# models/
+imgui.ini
+.vs/CMake Overview
+.vs/cmake.db
+.vs/ProjectSettings.json
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
+.vs/blocks/copilot-chat/cdf9b557/sessions/d152a02e-8461-427a-98fc-affacc270851
+.vs/blocks/CopilotIndices/17.14.1347.20289/CodeChunks.db
+.vs/blocks/CopilotIndices/17.14.1347.20289/SemanticSymbols.db
+.vs/blocks/FileContentIndex/159e4009-0bbc-445b-b486-f456d525111c.vsidx
+.vs/blocks/FileContentIndex/253ddbd8-1d69-4948-8131-9f482ac36b51.vsidx
+.vs/blocks/FileContentIndex/b01579c9-e165-488f-bf3c-dc140b25050b.vsidx
+.vs/blocks/v17/.wsuo
+.vs/blocks/v17/DocumentLayout.backup.json
+.vs/blocks/v17/DocumentLayout.json
