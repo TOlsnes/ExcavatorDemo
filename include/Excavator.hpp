@@ -145,6 +145,15 @@ private:
     std::shared_ptr<threepp::Object3D> leftTrackPivot_;
     std::shared_ptr<threepp::Object3D> rightTrackPivot_;
     std::shared_ptr<threepp::Object3D> turretPivot_;
+    std::shared_ptr<threepp::Object3D> boomPivot_;
+    std::shared_ptr<threepp::Object3D> stickPivot_;
+    std::shared_ptr<threepp::Object3D> bucketPivot_;
+
+    // Debug flags and nudges for pivots
+    bool stickUseMaxEnd_ = false;
+    bool bucketUseMaxEnd_ = false;
+    float stickNudgeZ_ = 0.0f;
+    float bucketNudgeZ_ = 0.0f;
 
     // Particle system for dust effects
     ParticleSystem* particleSystem_{nullptr};

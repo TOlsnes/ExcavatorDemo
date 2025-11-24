@@ -1,6 +1,7 @@
 #include "Excavator.hpp"
 #include "ParticleSystem.hpp"
 #include "CollisionWorld.hpp"
+#include "Settings.hpp"
 
 #include <threepp/threepp.hpp>
 #include <threepp/loaders/OBJLoader.hpp>
@@ -9,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 
+using namespace Settings;
 using namespace threepp;
 
 namespace {

@@ -477,7 +477,7 @@ void CollisionWorld::debugDrawRockHulls(threepp::Scene& scene, std::vector<std::
         
         try {
             auto geom = threepp::BufferGeometry::create();
-            geom->setAttribute("position", threepp::FloatBufferAttribute::create(std::vector<float>(vertices), 3));
+            geom->setAttribute("position", FloatBufferAttribute::create(std::vector<float>(vertices), 3));
             auto mat = threepp::LineBasicMaterial::create();
             mat->color = threepp::Color::red;
             auto line = threepp::LineSegments::create(geom, mat);
@@ -521,7 +521,7 @@ void CollisionWorld::debugDrawExcavatorHulls(threepp::Scene& scene,
         }
         
         auto geom = threepp::BufferGeometry::create();
-        geom->setAttribute("position", threepp::FloatBufferAttribute::create(std::vector<float>(vertices), 3));
+        geom->setAttribute("position", FloatBufferAttribute::create(vertices, 3));
         auto mat = threepp::LineBasicMaterial::create();
         mat->color = threepp::Color::green;
         auto line = threepp::LineSegments::create(geom, mat);

@@ -1,8 +1,11 @@
 #include "CoinManager.hpp"
+#include "Settings.hpp"
 #include <threepp/geometries/CylinderGeometry.hpp>
 #include <threepp/materials/MeshStandardMaterial.hpp>
 #include <threepp/math/MathUtils.hpp>
 #include <random>
+
+using namespace Settings;
 
 CoinManager::CoinManager(threepp::Scene& scene) : scene_(scene) {}
 

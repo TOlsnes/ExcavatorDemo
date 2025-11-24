@@ -4,7 +4,7 @@ namespace Settings {
     //---------------------------------------
     //----------Universal Constants----------
     //---------------------------------------
-    constexpr float PI = 3.14159265359f;
+    constexpr float PI_ = 3.14159265359f;
     constexpr int MaxRocks = 50;
     constexpr float ExcavatorBaseRadius = 0.8f;
     constexpr float TrackWidth = 1.0f;

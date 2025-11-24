@@ -1,5 +1,8 @@
 #include "Coin.hpp"
+#include "Settings.hpp"
 #include <cmath>
+
+using namespace Settings;
 
 Coin::Coin(const threepp::Vector3& position, std::shared_ptr<threepp::Mesh> mesh)
     : position_(position), mesh_(mesh) {

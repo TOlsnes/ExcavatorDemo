@@ -11,6 +11,7 @@
 #include "Settings.hpp"
 
 using namespace threepp;
+using namespace Settings;
 
 namespace {
     std::string resolveAssetPath(const std::string& rel) {
@@ -60,7 +61,7 @@ void ObjectSpawner::spawnGroundPlane_() {
     }
 
     auto ground = Mesh::create(groundGeometry, groundMaterial);
-    ground->rotation.x = -Settings::PI / 2.0f; // Flat on XZ plane
+    ground->rotation.x = -math::PI / 2.0f; // Flat on XZ plane
     ground->receiveShadow = true;
     scene_.add(ground);
 }
@@ -91,14 +92,14 @@ void ObjectSpawner::spawnPerimeterRocks_() {
     const float rockScale = 0.5f; // much larger scale
 
     for (int i = 0; i < rockCount; ++i) {
-        float angle = (i / static_cast<float>(rockCount)) * 2.0f * Settings::PI;
+        float angle = (i / static_cast<float>(rockCount)) * 2.0f * math::PI; //Use math::PI instead of Settings::PI as it was causing errors
         float x = std::cos(angle) * perimeterRadius;
         float z = std::sin(angle) * perimeterRadius;
 
         auto rock = rockGroup->clone<Object3D>(true);
         rock->position.set(x, 0, z);
         rock->scale.setScalar(rockScale);
-        rock->rotation.y = randomRange_(0.0f, 2.0f * Settings::PI);
+        rock->rotation.y = randomRange_(0.0f, 2.0f * math::PI);
 
         scene_.add(rock);
         // Register a mesh-based collider that matches the rock footprint
@@ -112,7 +113,7 @@ void ObjectSpawner::spawnSmallDebris_() {
     // Small rocks and debris scattered around
     for (int i = 0; i < config_.smallObjectCount; ++i) {
         // Random position within arena
-        float angle = randomRange_(0.0f, 2.0f * Settings::PI);
+        float angle = randomRange_(0.0f, 2.0f * math::PI);
         float distance = randomRange_(2.0f, config_.arenaRadius - 2.0f);
         float x = std::cos(angle) * distance;
         float z = std::sin(angle) * distance;
@@ -142,7 +143,7 @@ void ObjectSpawner::spawnSmallDebris_() {
         
         obj->position.x = x;
         obj->position.z = z;
-        obj->rotation.y = randomRange_(0.0f, 2.0f * Settings::PI);
+        obj->rotation.y = randomRange_(0.0f, 2.0f * math::PI);
         obj->castShadow = true;
         obj->receiveShadow = true;
         
@@ -154,7 +155,7 @@ void ObjectSpawner::spawnSmallDebris_() {
 void ObjectSpawner::spawnMediumObjects_() {
     // Barrels, crates, larger rocks
     for (int i = 0; i < config_.mediumObjectCount; ++i) {
-        float angle = randomRange_(0.0f, 2.0f * Settings::PI);
+        float angle = randomRange_(0.0f, 2.0f * math::PI);
         float distance = randomRange_(5.0f, config_.arenaRadius - 3.0f);
         float x = std::cos(angle) * distance;
         float z = std::sin(angle) * distance;
@@ -180,7 +181,7 @@ void ObjectSpawner::spawnMediumObjects_() {
         
         obj->position.x = x;
         obj->position.z = z;
-        obj->rotation.y = randomRange_(0.0f, 2.0f * Settings::PI);
+        obj->rotation.y = randomRange_(0.0f, 2.0f * math::PI);
         obj->castShadow = true;
         obj->receiveShadow = true;
         
@@ -193,7 +194,7 @@ void ObjectSpawner::spawnLargeObstacles_() {
     // Large boulders and concrete blocks
     for (int i = 0; i < config_.largeObjectCount; ++i) {
         // Place in a rough circle pattern
-        float angle = (i / static_cast<float>(config_.largeObjectCount)) * 2.0f * Settings::PI;
+        float angle = (i / static_cast<float>(config_.largeObjectCount)) * 2.0f * math::PI;
         angle += randomRange_(-0.3f, 0.3f);
         float distance = config_.arenaRadius * 0.6f + randomRange_(-3.0f, 3.0f);
         float x = std::cos(angle) * distance;
@@ -218,7 +219,7 @@ void ObjectSpawner::spawnLargeObstacles_() {
         
         obj->position.x = x;
         obj->position.z = z;
-        obj->rotation.y = randomRange_(0.0f, 2.0f * Settings::PI);
+        obj->rotation.y = randomRange_(0.0f, 2.0f * math::PI);
         obj->castShadow = true;
         obj->receiveShadow = true;
         

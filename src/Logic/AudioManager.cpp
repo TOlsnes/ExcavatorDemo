@@ -1,5 +1,8 @@
 #include "AudioManager.hpp"
+#include "Settings.hpp"
 #include <iostream>
+
+using namespace Settings;
 
 AudioManager::AudioManager(threepp::AudioListener& listener)
     : listener_(listener) {}
