@@ -15,3 +15,17 @@ The program can load 3d-models, simulate excavator movement with acceleration, d
 
 <h2>UML Class Diagram</h2>
 <img src="UML diagram.png" alt="UML Diagram" width="600">
+Settings is used in most things as it serves as an easy way for me to change values while coding. The input manager is used by the main program.
+
+<h2>Reflection</h2>
+Throughout this project i felt like it kinda turned away from the creative fun project i was doing into a chore which i do think negatively affected my work. I had a lot of fun working on the interactions inbetween the different parts of the excavator and figure out how to get it working propperly while closer to the end it became more of a oh add another thing to satisfy the requirements over and over. I really enjoyed working out the physical problems like how to get the tracks to move. Thats the main reason why i wanted to make a excavator instead of a car like everyone else. I could make the animation a lot smoother by adding more models that are closer together as right now theres just 3 different animations. I think toward the end i ended up looking up way more and thinking less when i came upon problems, that kinda snowballed. 
+
+<h2>Improvements</h2>
+There is a LOT to improve on here. First of all i think as i got lazier with my coding it also got less and less optimized and way more code. Other than that the error handeling is probably obysmal. There was quite many errors i let copilot fix without fully understanding which came back to bite me in the butt. Finally i should probably add the unlockable gate (whcich i forgot) aswell as better audio integration including things like collision, scooping and dumping of materials. If it were to be played as an actual mini-game some explanatory UI should also be added, for example pop ups/guides telling you how the controlls work, i think it could function pretty well as a tutorial for a bigger game.
+
+<h2>Sources</h2>
+1. Use of goto in Collision world (i read that its bad to use goto but not if its inside of a nested loop): https://stackoverflow.com/questions/3517726/what-is-wrong-with-using-goto
+
+2. Collision detection in Collision world (especially the part that pushes the excavator away if its too close (288-314): https://gamedev.net/forums/topic/715956-aabb-collision/
+
+3. Convex hull collision (this one helped me visualize what everything actually ment when it came to collision) https://stackoverflow.com/questions/56912376/3d-collision-detection-convex-hull-vs-convex-hull-need-position-and-normal
