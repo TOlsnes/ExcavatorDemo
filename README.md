@@ -14,4 +14,4 @@ Threepp Excavator is a very small demo whose purpose is to show up some basic un
 The program can load 3d-models, simulate excavator movement with acceleration, deceleration and individual trackspeeds. It can interact with different objects aswell as play sound based on things like speed and objects picked up aswell as a adjustable master volume bar.
 
 <h2>UML Class Diagram</h2>
-<img src="C:\Dev\blocks\UML diagram.png" alt="UML Diagram" width="600">
+<img src="UML diagram.png" alt="UML Diagram" width="600">
