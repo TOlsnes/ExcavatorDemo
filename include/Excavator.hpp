@@ -106,7 +106,7 @@ public:
     
     // Access mesh parts for collision visualization
     threepp::Object3D* baseMesh() { return baseMesh_.get(); }
-    threepp::Object3D* bodyMesh() { return static_cast<threepp::Object3D*>(bodyMesh_.get()); }
+    threepp::Object3D* bodyMesh() { return bodyMesh_.get(); }
     threepp::Object3D* boomMesh() { return arm1Mesh_.get(); }
     threepp::Object3D* stickMesh() { return arm2Mesh_.get(); }
     threepp::Object3D* bucketMesh() { return bucketMesh_.get(); }
