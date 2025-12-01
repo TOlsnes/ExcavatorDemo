@@ -40,21 +40,21 @@ endif()
 
 add_executable(main
         main_excavator_example.cpp
-        src/InputManager.cpp
-        src/World.cpp
-        src/Renderer.cpp
-        src/Car.cpp
-        src/Excavator.cpp
-        src/ObjectSpawner.cpp
-        src/CollisionWorld.cpp
-        src/ParticleSystem.cpp
-        src/DigZone.cpp
-        src/DumpZone.cpp
-        src/Gate.cpp
-        src/AudioManager.cpp
-        src/Coin.cpp
-        src/CoinManager.cpp
-        src/TrackMarkManager.cpp
+        # Visualization
+        src/Visualization/Renderer.cpp
+        src/Visualization/ParticleSystem.cpp
+        src/Visualization/TrackMarkManager.cpp
+        src/Visualization/World.cpp
+        # Logic
+        src/Logic/InputManager.cpp
+        src/Logic/Excavator.cpp
+        src/Logic/ObjectSpawner.cpp
+        src/Logic/CollisionWorld.cpp
+        src/Logic/DigZone.cpp
+        src/Logic/DumpZone.cpp
+        src/Logic/AudioManager.cpp
+        src/Logic/Coin.cpp
+        src/Logic/CoinManager.cpp
 )
 
 target_include_directories(main

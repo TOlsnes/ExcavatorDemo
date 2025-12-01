@@ -7,6 +7,7 @@ using namespace Settings;
 AudioManager::AudioManager(threepp::AudioListener& listener)
     : listener_(listener) {}
 
+//---- LOADS ----
 void AudioManager::loadStartupSound(const std::string& path) {
     try {
         startupSound_ = std::make_unique<threepp::Audio>(listener_, path);
@@ -51,36 +52,6 @@ void AudioManager::loadSteamSound(const std::string& path) {
     }
 }
 
-void AudioManager::loadDigSound(const std::string& path) {
-    try {
-        digSound_ = std::make_unique<threepp::Audio>(listener_, path);
-        digSound_->setVolume(0.5f * effectsVolume_);
-        std::cout << "Loaded dig sound: " << path << std::endl;
-    } catch (const std::exception& e) {
-        std::cerr << "Failed to load dig sound: " << e.what() << std::endl;
-    }
-}
-
-void AudioManager::loadDumpSound(const std::string& path) {
-    try {
-        dumpSound_ = std::make_unique<threepp::Audio>(listener_, path);
-        dumpSound_->setVolume(0.6f * effectsVolume_);
-        std::cout << "Loaded dump sound: " << path << std::endl;
-    } catch (const std::exception& e) {
-        std::cerr << "Failed to load dump sound: " << e.what() << std::endl;
-    }
-}
-
-void AudioManager::loadCollisionSound(const std::string& path) {
-    try {
-        collisionSound_ = std::make_unique<threepp::Audio>(listener_, path);
-        collisionSound_->setVolume(0.4f * effectsVolume_);
-        std::cout << "Loaded collision sound: " << path << std::endl;
-    } catch (const std::exception& e) {
-        std::cerr << "Failed to load collision sound: " << e.what() << std::endl;
-    }
-}
-
 void AudioManager::loadCoinSound(const std::string& path) {
     try {
         coinSound_ = std::make_unique<threepp::Audio>(listener_, path);
@@ -100,7 +71,7 @@ void AudioManager::startEngine() {
 }
 
 void AudioManager::updateEngine(float dt) {
-    // Transition from startup to idle when startup finishes
+    // Transition from startup to idle 
     if (!startupComplete_ && startupSound_) {
         if (!startupSound_->isPlaying()) {
             startupComplete_ = true;
@@ -162,30 +133,6 @@ void AudioManager::stopSteam() {
     }
 }
 
-void AudioManager::playDig() {
-    if (digSound_) {
-        if (digSound_->isPlaying()) {
-            digSound_->stop();
-        }
-        digSound_->play();
-    }
-}
-
-void AudioManager::playDump() {
-    if (dumpSound_) {
-        if (dumpSound_->isPlaying()) {
-            dumpSound_->stop();
-        }
-        dumpSound_->play();
-    }
-}
-
-void AudioManager::playCollision() {
-    if (collisionSound_ && !collisionSound_->isPlaying()) {
-        collisionSound_->play();
-    }
-}
-
 void AudioManager::playCoin() {
     if (coinSound_) {
         if (coinSound_->isPlaying()) {
@@ -199,10 +146,8 @@ void AudioManager::setMasterVolume(float volume) {
     listener_.setMasterVolume(volume);
 }
 
+
 void AudioManager::setEffectsVolume(float volume) {
     effectsVolume_ = volume;
-    if (digSound_) digSound_->setVolume(0.5f * effectsVolume_);
-    if (dumpSound_) dumpSound_->setVolume(0.6f * effectsVolume_);
-    if (collisionSound_) collisionSound_->setVolume(0.4f * effectsVolume_);
     if (coinSound_) coinSound_->setVolume(0.5f * effectsVolume_);
 }

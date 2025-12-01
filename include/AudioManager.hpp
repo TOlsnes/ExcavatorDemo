@@ -10,39 +10,34 @@ class AudioManager {
 public:
     explicit AudioManager(threepp::AudioListener& listener);
     
-    // Load sound files
+    // sound files
     void loadStartupSound(const std::string& path);
     void loadIdleSound(const std::string& path);
     void loadHydraulicsSound(const std::string& path);
     void loadSteamSound(const std::string& path);
-    void loadDigSound(const std::string& path);
-    void loadDumpSound(const std::string& path);
-    void loadCollisionSound(const std::string& path);
     void loadCoinSound(const std::string& path);
     
-    // Engine control
-    void startEngine();  // Play startup then transition to idle
-    void updateEngine(float dt);  // Call each frame to handle transitions
+    // Engine 
+    void startEngine();  
+    void updateEngine(float dt);  // Call to update sounds
     void setIdleVolume(float volume);
     bool isStartupComplete() const { return Settings::startupComplete_; }
     
-    // Hydraulics control (with volume hierarchy: boom > stick > bucket)
+    // Hydraulics 
     void playHydraulics(float volume);  // For upward movement
-    void playHydraulicsIfNotPlaying(float volume);  // Only start if not already playing
+    void playHydraulicsIfNotPlaying(float volume);  
     void stopHydraulics();
     
-    // Steam control (with volume hierarchy: boom > stick > bucket)
+    // Steam control 
     void playSteam(float volume);  // For downward movement
-    void playSteamIfNotPlaying(float volume);  // Only start if not already playing
+    void playSteamIfNotPlaying(float volume); 
     void stopSteam();
     
-    // Gameplay sounds
-    void playDig();
-    void playDump();
-    void playCollision();
+    // Gameplay 
     void playCoin();
-    
-    // Volume control
+    // Maybe ni the future add dig, dump and collision
+
+    // Volume 
     void setMasterVolume(float volume);
     void setEffectsVolume(float volume);
     
@@ -53,9 +48,6 @@ private:
     std::unique_ptr<threepp::Audio> idleSound_;
     std::unique_ptr<threepp::Audio> hydraulicsSound_;
     std::unique_ptr<threepp::Audio> steamSound_;
-    std::unique_ptr<threepp::Audio> digSound_;
-    std::unique_ptr<threepp::Audio> dumpSound_;
-    std::unique_ptr<threepp::Audio> collisionSound_;
     std::unique_ptr<threepp::Audio> coinSound_;
 };
 

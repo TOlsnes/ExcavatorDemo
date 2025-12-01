@@ -6,11 +6,9 @@
 
 using namespace threepp;
 
-std::vector<CollisionWorld::SphereCollider> CollisionWorld::s_rockSpheres;
-std::vector<CollisionWorld::AABBCollider> CollisionWorld::s_rockAABBs;
+// use convex hulls so you dont have to do full mesh to mesh collision
 std::vector<CollisionWorld::MeshXZCollider> CollisionWorld::s_rockMeshes;
-float CollisionWorld::s_rockRadiusMultiplier = 1.1f; // slightly larger than fit
-float CollisionWorld::s_rockHullPadding = 0.005f; // shrink hull by 5mm to reduce air collision
+float CollisionWorld::s_rockHullPadding = 0.005f; // shrink hull by 5mm cus its colliding w air
 std::vector<CollisionWorld::NoCollisionZone> CollisionWorld::s_noCollisionZones;
 
 float CollisionWorld::groundY() {
@@ -18,48 +16,8 @@ float CollisionWorld::groundY() {
 }
 
 void CollisionWorld::clear() {
-    s_rockSpheres.clear();
-    s_rockAABBs.clear();
     s_rockMeshes.clear();
     s_noCollisionZones.clear();
-}
-
-void CollisionWorld::addRockColliderFromObject(Object3D& obj) {
-    // Ensure world matrices are up to date for bounds calculation
-    obj.updateMatrixWorld(true);
-
-    Box3 box;
-    box.setFromObject(obj, false); // compute in world-space
-    Vector3 center;
-    box.getCenter(center);
-    Vector3 size;
-    box.getSize(size);
-    // Use horizontal footprint only; enlarge slightly with a multiplier
-    float horizMax = std::max(size.x, size.z);
-    float radius = horizMax * 0.5f * s_rockRadiusMultiplier;
-    // Safety clamp (avoid absurdly large radii if size not scaled yet)
-    if (radius > 5.0f) radius = 5.0f;
-
-    SphereCollider sc;
-    sc.center = center;
-    sc.radius = radius;
-    s_rockSpheres.push_back(sc);
-}
-
-void CollisionWorld::addRockAABBFromObject(Object3D& obj) {
-    obj.updateMatrixWorld(true);
-
-    Box3 box;
-    box.setFromObject(obj, false);
-    const auto& bmin = box.min();
-    const auto& bmax = box.max();
-
-    AABBCollider ac;
-    ac.minX = bmin.x;
-    ac.maxX = bmax.x;
-    ac.minZ = bmin.z;
-    ac.maxZ = bmax.z;
-    s_rockAABBs.push_back(ac);
 }
 
 namespace {
@@ -251,38 +209,18 @@ void CollisionWorld::clearNoCollisionZones() {
     s_noCollisionZones.clear();
 }
 
-void CollisionWorld::setRockRadiusMultiplier(float m) {
-    // clamp to sensible range
-    if (m < 0.5f) m = 0.5f;
-    if (m > 2.0f) m = 2.0f;
-    s_rockRadiusMultiplier = m;
-}
-
-float CollisionWorld::getRockRadiusMultiplier() {
-    return s_rockRadiusMultiplier;
-}
-
-void CollisionWorld::setRockHullPadding(float m) {
-    if (m < 0) m = 0;
-    if (m > 0.3f) m = 0.3f; // clamp
-    s_rockHullPadding = m;
-}
-
-float CollisionWorld::getRockHullPadding() {
-    return s_rockHullPadding;
-}
-
 bool CollisionWorld::resolveExcavatorMove(float& x, float& z, float excavatorRadius) {
     bool adjusted = false;
     // If inside any pass-through zone, skip mesh/AABB pushes
     for (const auto& zc : s_noCollisionZones) {
         if (pointInOrientedRect(x, z, zc, excavatorRadius, excavatorRadius)) {
-            // Still resolve spheres (piles) to avoid falling through those
-            // Mesh/AABB checks skipped entirely
+            // us no collison zones so you can pass through dump piles and other stuff
+            // Still resolve spheres (piles) to avoid falling through those but still being able to dig
             goto spheres_only;
         }
     }
     // First, resolve against mesh hulls (closest to real rock shapes)
+    // This loop finds the closest point on the hull edges and pushes out if inside (2)
     for (const auto& mc : s_rockMeshes) {
         const auto& poly = mc.hull;
         if (poly.size() < 3) continue;
@@ -310,48 +248,9 @@ bool CollisionWorld::resolveExcavatorMove(float& x, float& z, float excavatorRad
             adjusted = true;
         }
     }
-    // Then AABB resolution in XZ (fallback)
-    for (const auto& a : s_rockAABBs) {
-        float minX = a.minX - excavatorRadius;
-        float maxX = a.maxX + excavatorRadius;
-        float minZ = a.minZ - excavatorRadius;
-        float maxZ = a.maxZ + excavatorRadius;
-
-        if (x > minX && x < maxX && z > minZ && z < maxZ) {
-            float pushLeft = x - minX;
-            float pushRight = maxX - x;
-            float pushDown = z - minZ;
-            float pushUp = maxZ - z;
-
-            float minPushX = std::min(pushLeft, pushRight);
-            float minPushZ = std::min(pushDown, pushUp);
-            if (minPushX < minPushZ) {
-                x = (pushLeft < pushRight) ? (minX - 1e-3f) : (maxX + 1e-3f);
-            } else {
-                z = (pushDown < pushUp) ? (minZ - 1e-3f) : (maxZ + 1e-3f);
-            }
-            adjusted = true;
-        }
-    }
 
     spheres_only:
-    // Finally spheres (if any)
-    for (const auto& s : s_rockSpheres) {
-        float dx = x - s.center.x;
-        float dz = z - s.center.z;
-        float dist2 = dx * dx + dz * dz;
-        float minDist = excavatorRadius + s.radius;
-        float minDist2 = minDist * minDist;
-        if (dist2 < minDist2) {
-            float dist = std::sqrt(std::max(dist2, 1e-6f));
-            float nx = dx / dist;
-            float nz = dz / dist;
-            float targetDist = minDist + 1e-3f;
-            x = s.center.x + nx * targetDist;
-            z = s.center.z + nz * targetDist;
-            adjusted = true;
-        }
-    }
+    // Sphere collision handling removed - only mesh colliders used
     return adjusted;
 }
 
@@ -363,12 +262,11 @@ bool CollisionWorld::resolveExcavatorMeshCollisions(threepp::Object3D* root,
                                                       threepp::Object3D* bucketMesh) {
     if (!root) return false;
     
-    // Check base/tracks, body, and boom for collision (NOT bucket - allow digging)
+    // Check base/tracks, body, and boom for collision, bucket not included cus of digging
     std::vector<threepp::Object3D*> parts;
     if (baseMesh) parts.push_back(baseMesh);
     if (bodyMesh) parts.push_back(bodyMesh);
     if (boomMesh) parts.push_back(boomMesh);
-    // Bucket excluded so it can dig into piles
     
     bool adjusted = false;
     threepp::Vector3 totalPush{0, 0, 0};
@@ -378,7 +276,7 @@ bool CollisionWorld::resolveExcavatorMeshCollisions(threepp::Object3D* root,
         auto partHull = computeObjectHull(part);
         if (partHull.size() < 3) continue;
 
-        // If any vertex of this part is in a pass-through zone, skip mesh/AABB collision for this part
+        // If any vertex of this part is in a pass-through zone, skip mesh/AABB collision for this part (helped with air collision around the enterance)
         bool inNoCollide = false;
         if (!s_noCollisionZones.empty()) {
             for (const auto& zc : s_noCollisionZones) {
@@ -390,15 +288,15 @@ bool CollisionWorld::resolveExcavatorMeshCollisions(threepp::Object3D* root,
         }
 
         if (inNoCollide) {
-            continue; // skip mesh pushes for this part; still allow spheres later via root push accumulation
+            continue; // skip mesh pushes for this part; still allow spheres later via root push accumulation (mesh collision skipped)
         }
         
-        // Check this excavator part's hull against each rock hull
+        // Check this excavator parts hull against each rock hull
         for (const auto& mc : s_rockMeshes) {
             const auto& rockHull = mc.hull;
             if (rockHull.size() < 3) continue;
             
-            // Find the most penetrating edge on the rock hull
+            // Find the deepest edge on the rock hull
             float maxPenetration = -std::numeric_limits<float>::infinity();
             threepp::Vector2 bestN{0, 0};
             
@@ -426,7 +324,7 @@ bool CollisionWorld::resolveExcavatorMeshCollisions(threepp::Object3D* root,
                 }
             }
             
-            // If penetrating (considering padding), push out
+            // If penetrating push out
             float threshold = -s_rockHullPadding;
             if (maxPenetration < threshold) {
                 float push = (threshold - maxPenetration) + 1e-3f;
@@ -446,7 +344,7 @@ bool CollisionWorld::resolveExcavatorMeshCollisions(threepp::Object3D* root,
 }
 
 void CollisionWorld::debugDrawRockHulls(threepp::Scene& scene, std::vector<std::shared_ptr<threepp::Object3D>>& debugObjects) {
-    // Clear previous debug objects from scene
+    // Clear previous debug objects from scene cus they were lingering
     for (auto& obj : debugObjects) {
         if (obj) scene.remove(*obj);
     }
@@ -465,7 +363,7 @@ void CollisionWorld::debugDrawRockHulls(threepp::Scene& scene, std::vector<std::
             const auto& next = hull[(i + 1) % hull.size()];
             
             vertices.push_back(p.x);
-            vertices.push_back(0.1f); // slightly above ground
+            vertices.push_back(0.1f); // move up so i can see the debug lines
             vertices.push_back(p.y);
             
             vertices.push_back(next.x);
@@ -477,7 +375,7 @@ void CollisionWorld::debugDrawRockHulls(threepp::Scene& scene, std::vector<std::
         
         try {
             auto geom = threepp::BufferGeometry::create();
-            geom->setAttribute("position", FloatBufferAttribute::create(std::vector<float>(vertices), 3));
+            geom->setAttribute("position", FloatBufferAttribute::create(std::vector<float>(vertices), 3)); // I get a no instance of overloaded function error but it still works so imma not question it
             auto mat = threepp::LineBasicMaterial::create();
             mat->color = threepp::Color::red;
             auto line = threepp::LineSegments::create(geom, mat);
@@ -521,7 +419,7 @@ void CollisionWorld::debugDrawExcavatorHulls(threepp::Scene& scene,
         }
         
         auto geom = threepp::BufferGeometry::create();
-        geom->setAttribute("position", FloatBufferAttribute::create(vertices, 3));
+        geom->setAttribute("position", FloatBufferAttribute::create(vertices, 3)); // same overload error but imma not question it
         auto mat = threepp::LineBasicMaterial::create();
         mat->color = threepp::Color::green;
         auto line = threepp::LineSegments::create(geom, mat);

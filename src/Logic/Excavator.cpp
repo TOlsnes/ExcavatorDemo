@@ -15,7 +15,7 @@ using namespace threepp;
 
 namespace {
 
-// Align along a specific axis (0=X,1=Y,2=Z): place either min or max end at the parent's pivot.
+// Align along a axis (0=X,1=Y,2=Z): place either min or max end at the parent's pivot.
 void alignEndAtPivotAxis(Object3D* obj, int axis, bool useMaxEnd = false) {
     if (!obj) return;
 
@@ -47,19 +47,17 @@ Excavator::Excavator(const Paths& paths, Scene& scene)
     loadModels_(paths);
     buildHierarchy_();
 
-    // Add the excavator root to the scene
     scene_.add(root_);
 }
 
 Excavator::~Excavator() = default;
 
 void Excavator::reset() {
-    // Reset position and rotation
+    // Resets
     root_->position.set(0, 0, 0);
     baseYaw_ = 0.0f;
     root_->rotation.z = 0.0f;
     
-    // Reset track speeds and distances
     targetLeftTrackSpeed_ = 0.0f;
     targetRightTrackSpeed_ = 0.0f;
     leftTrackSpeed_ = 0.0f;
@@ -69,7 +67,6 @@ void Excavator::reset() {
     leftTrackFrame_ = 0;
     rightTrackFrame_ = 0;
     
-    // Reset track visibility (only frame 0 visible)
     for (int i = 0; i < 3; ++i) {
         if (leftTrackMeshes_[i]) {
             leftTrackMeshes_[i]->visible = (i == 0);
@@ -79,19 +76,16 @@ void Excavator::reset() {
         }
     }
     
-    // Reset joint angles
     turretYaw_ = 0.0f;
     boomAngle_ = 0.0f;
     stickAngle_ = 0.0f;
     bucketAngle_ = 0.0f;
-    
-    // Apply joint angles
+
     if (turretPivot_) turretPivot_->rotation.z = 0.0f;
     if (boomPivot_) boomPivot_->rotation.y = 0.0f;
     if (stickPivot_) stickPivot_->rotation.y = 0.0f;
     if (bucketPivot_) bucketPivot_->rotation.y = 0.0f;
-    
-    // Reset bucket load state
+
     bucketLoaded_ = false;
     
     // Reset bucket color to gray
@@ -105,7 +99,7 @@ void Excavator::reset() {
         });
     }
     
-    // Update matrices
+    // Update matrixes
     root_->updateMatrixWorld(true);
 }
 
@@ -114,7 +108,7 @@ void Excavator::loadModels_(const Paths& paths) {
 
     std::cout << "Loading excavator models...\n";
 
-    // Load track variants
+    // Load track animations
     leftTrackMeshes_[0] = loader.load(paths.leftTrack0);
     leftTrackMeshes_[1] = loader.load(paths.leftTrack1);
     leftTrackMeshes_[2] = loader.load(paths.leftTrack2);
@@ -138,12 +132,10 @@ void Excavator::buildHierarchy_() {
     root_ = Object3D::create();
     root_->name = "excavator_root";
     
-    // Scale down from Fusion 360 export (likely in mm, we want meters)
-    // Adjust this value based on your model size
+    // Scale down from Fusion 360 export (from mm to meters)
     root_->scale.set(0.01f, 0.01f, 0.01f);
     
-    // Rotate to align with our world (Fusion exports in different orientation)
-    // Rotate 90 degrees around X to make it upright
+    // Rotated cus its being dumb and upsidr down
     root_->rotation.x = -math::PI / 2;
 
     // --- Base (chassis) ---
@@ -151,19 +143,16 @@ void Excavator::buildHierarchy_() {
     root_->add(baseMesh_);
 
     // --- Left Track Pivot ---
-    // Position this where your left track should be relative to base
-    // Adjust these offsets to match your model's layout
-    leftTrackPivot_ = Object3D::create();
+    // Relative to da base
     leftTrackPivot_->name = "leftTrackPivot";
-    // Manual position: adjust X to move left/right, Y to move forward/back, Z to move up/down
-    // Remember: root has scale=0.01 and rotation=-90°X, so local coords are 100x larger than world
-    leftTrackPivot_->position.set(-20.0f, -50.0f, 0.0f);  // <-- ADJUST THIS (negative X = left side)
+    // root has scale=0.01 and rotation=-90°X, so local coords are 100x larger than world
+    leftTrackPivot_->position.set(-20.0f, -50.0f, 0.0f); 
     std::cout << "Left track pivot at X=" << leftTrackPivot_->position.x 
               << " Y=" << leftTrackPivot_->position.y 
               << " Z=" << leftTrackPivot_->position.z << "\n";
     root_->add(leftTrackPivot_);
 
-    // Align all left track frames: add frame 0 first, get its world bounding box,
+    // Align all left track frames: add frame 0 first
     // then offset frames 1 and 2 to occupy the same world space
     leftTrackMeshes_[0]->name = "leftTrack_0";
     leftTrackMeshes_[0]->visible = true;
@@ -172,7 +161,7 @@ void Excavator::buildHierarchy_() {
     // Update matrix world to get correct world positions
     root_->updateMatrixWorld(true);
     
-    // Compute frame 0's world bounding box center
+    // Compute frame 0's world center
     Box3 leftBox0;
     leftBox0.setFromObject(*leftTrackMeshes_[0], false);  // use world coords
     Vector3 leftCenter0;
@@ -198,9 +187,8 @@ void Excavator::buildHierarchy_() {
     // --- Right Track Pivot ---
     rightTrackPivot_ = Object3D::create();
     rightTrackPivot_->name = "rightTrackPivot";
-    // Manual position: same as left track - they'll move together
-    // To separate them, change the X value (increase X to move right track further right)
-    rightTrackPivot_->position.set(-20.0f, 25.0f, 0.0f);  // <-- ADJUST THIS (positive X = right side)
+    // Manual position: same as left track 
+    rightTrackPivot_->position.set(-20.0f, 25.0f, 0.0f);  
     std::cout << "Right track pivot at X=" << rightTrackPivot_->position.x 
               << " Y=" << rightTrackPivot_->position.y 
               << " Z=" << rightTrackPivot_->position.z << "\n";

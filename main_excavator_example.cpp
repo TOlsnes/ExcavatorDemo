@@ -413,9 +413,6 @@ int main() {
     audioManager.loadIdleSound(resolveAssetPath("models/idleExcavator.wav"));
     audioManager.loadHydraulicsSound(resolveAssetPath("models/hydraulicsExcavator.wav"));
     audioManager.loadSteamSound(resolveAssetPath("models/steamExcavator.wav"));
-    audioManager.loadDigSound(resolveAssetPath("models/dig.wav"));
-    audioManager.loadDumpSound(resolveAssetPath("models/dump.wav"));
-    audioManager.loadCollisionSound(resolveAssetPath("models/collision.wav"));
     audioManager.loadCoinSound(resolveAssetPath("models/coinExcavator.wav"));
     
     // Start engine with startup sound
@@ -807,9 +804,6 @@ int main() {
                 CollisionWorld::updateLastRockMeshColliderFromObject(*digZone.getVisual());
             }
             
-            // Play dig sound
-            audioManager.playDig();
-            
             digScoops++;
             if (digScoops >= 5 && !pileGone) {
                 pileGone = true;
@@ -823,9 +817,6 @@ int main() {
         if (excavator.isBucketLoaded() && dumpZone.isInZone(bucketPos)) {
             excavator.unloadBucket();
             dumpZone.recordDump();
-            
-            // Play dump sound
-            audioManager.playDump();
         }
 
         // Debug visualization
