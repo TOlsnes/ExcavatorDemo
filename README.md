@@ -22,3 +22,10 @@ Throughout this project i felt like it kinda turned away from the creative fun p
 
 <h2>Improvements</h2>
 There is a LOT to improve on here. First of all i think as i got lazier with my coding it also got less and less optimized and way more code. Other than that the error handeling is probably obysmal. There was quite many errors i let copilot fix without fully understanding which came back to bite me in the butt. Finally i should probably add the unlockable gate (whcich i forgot) aswell as better audio integration including things like collision, scooping and dumping of materials. If it were to be played as an actual mini-game some explanatory UI should also be added, for example pop ups/guides telling you how the controlls work, i think it could function pretty well as a tutorial for a bigger game.
+
+<h2>Sources</h2>
+1. Use of goto in Collision world (i read that its bad to use goto but not if its inside of a nested loop): https://stackoverflow.com/questions/3517726/what-is-wrong-with-using-goto
+
+2. Collision detection in Collision world (especially the part that pushes the excavator away if its too close (288-314): https://gamedev.net/forums/topic/715956-aabb-collision/
+
+3. Convex hull collision (this one helped me visualize what everything actually ment when it came to collision) https://stackoverflow.com/questions/56912376/3d-collision-detection-convex-hull-vs-convex-hull-need-position-and-normal
