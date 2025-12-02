@@ -18,8 +18,6 @@ public:
     // Adjust spawning behavior
     void setSpawnDistance(float d) { Settings::spawnDistance_ = d; }
     void setLifetime(float seconds) { Settings::lifetime_ = seconds; }
-    void setMarkDimensions(float width, float length) { Settings::markWidth_ = width; Settings::markLength_ = length; }
-    void setTrackSeparation(float sep) { Settings::trackSeparation_ = sep; }
 
 private:
     struct Mark {

@@ -24,7 +24,6 @@ public:
 
     // Reduce the pile by a fraction [0..1], returns true if changed
     bool dig(float fraction);
-    float currentScale() const { return m_scale; }
     
     // Reset to initial state (full size)
     void reset();

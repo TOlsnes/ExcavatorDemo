@@ -18,8 +18,8 @@ public:
     // Record a successful dump
     void recordDump();
     
-    // Get total dumps made
-    int getDumpCount() const { return m_dumpCount; }
+    // Get total dumps made (unused)
+    // int getDumpCount() const { return m_dumpCount; }
     
     // Get the visual representation for the scene
     std::shared_ptr<threepp::Group> getVisual() const { return m_visual; }

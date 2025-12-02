@@ -9,8 +9,8 @@ class Coin {
 public:
     Coin(const threepp::Vector3& position, std::shared_ptr<threepp::Mesh> mesh);
     
-    bool isCollected() const { return Settings::collected_; }
-    void collect() { Settings::collected_ = true; }
+    bool isCollected() const { return collected_; }
+    void collect() { collected_ = true; }
     
     const threepp::Vector3& getPosition() const { return position_; }
     std::shared_ptr<threepp::Mesh> getMesh() { return mesh_; }
@@ -20,4 +20,6 @@ public:
 private:
     threepp::Vector3 position_;
     std::shared_ptr<threepp::Mesh> mesh_;
+    bool collected_{false};
+    float time_{0.f};
 };

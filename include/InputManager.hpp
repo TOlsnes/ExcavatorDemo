@@ -59,64 +59,66 @@ public:
      */
     bool isKeyPressed(Key key) const;
 
-    /**
-     * Check if a key was just pressed this frame
-     * @param key Key to check
-     * @return true if just pressed, false otherwise
-     */
-    bool wasKeyJustPressed(Key key) const;
+    // Unused methods - commented out
+    // /**
+    //  * Check if a key was just pressed this frame
+    //  * @param key Key to check
+    //  * @return true if just pressed, false otherwise
+    //  */
+    // bool wasKeyJustPressed(Key key) const;
 
-    /**
-     * Check if a key was just released this frame
-     * @param key Key to check
-     * @return true if just released, false otherwise
-     */
-    bool wasKeyJustReleased(Key key) const;
+    // /**
+    //  * Check if a key was just released this frame
+    //  * @param key Key to check
+    //  * @return true if just released, false otherwise
+    //  */
+    // bool wasKeyJustReleased(Key key) const;
 
-    /**
-     * Check if a mouse button is currently pressed
-     * @param button Mouse button to check
-     * @return true if pressed, false otherwise
-     */
-    bool isMouseButtonPressed(MouseButton button) const;
+    // /**
+    //  * Check if a mouse button is currently pressed
+    //  * @param button Mouse button to check
+    //  * @return true if pressed, false otherwise
+    //  */
+    // bool isMouseButtonPressed(MouseButton button) const;
 
-    /**
-     * Get current mouse position
-     * @param x Output x coordinate
-     * @param y Output y coordinate
-     */
-    void getMousePosition(double& x, double& y) const;
+    // /**
+    //  * Get current mouse position
+    //  * @param x Output x coordinate
+    //  * @param y Output y coordinate
+    //  */
+    // void getMousePosition(double& x, double& y) const;
 
-    /**
-     * Get mouse movement delta since last frame
-     * @param deltaX Output x delta
-     * @param deltaY Output y delta
-     */
-    void getMouseDelta(double& deltaX, double& deltaY) const;
+    // /**
+    //  * Get mouse movement delta since last frame
+    //  * @param deltaX Output x delta
+    //  * @param deltaY Output y delta
+    //  */
+    // void getMouseDelta(double& deltaX, double& deltaY) const;
 
-    /**
-     * Set key callback
-     * @param callback Function to call on key events
-     */
-    void setKeyCallback(KeyCallback callback);
+    // Unused callback setters - commented out
+    // /**
+    //  * Set key callback
+    //  * @param callback Function to call on key events
+    //  */
+    // void setKeyCallback(KeyCallback callback);
 
-    /**
-     * Set mouse button callback
-     * @param callback Function to call on mouse button events
-     */
-    void setMouseButtonCallback(MouseButtonCallback callback);
+    // /**
+    //  * Set mouse button callback
+    //  * @param callback Function to call on mouse button events
+    //  */
+    // void setMouseButtonCallback(MouseButtonCallback callback);
 
-    /**
-     * Set mouse movement callback
-     * @param callback Function to call on mouse movement
-     */
-    void setMouseMoveCallback(MouseMoveCallback callback);
+    // /**
+    //  * Set mouse movement callback
+    //  * @param callback Function to call on mouse movement
+    //  */
+    // void setMouseMoveCallback(MouseMoveCallback callback);
 
-    /**
-     * Enable/disable mouse cursor
-     * @param enabled true to show cursor, false to hide and capture
-     */
-    void setCursorEnabled(bool enabled);
+    // /**
+    //  * Enable/disable mouse cursor
+    //  * @param enabled true to show cursor, false to hide and capture
+    //  */
+    // void setCursorEnabled(bool enabled);
 
 private:
     threepp::Canvas* m_canvas;

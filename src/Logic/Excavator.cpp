@@ -92,7 +92,7 @@ void Excavator::reset() {
     if (bucketMesh_) {
         bucketMesh_->traverseType<Mesh>([](Mesh& m) {
             if (auto mat = m.material()) {
-                if (auto phong = mat->as<MeshPhongMaterial>()) {
+                if (auto phong = dynamic_cast<threepp::MeshPhongMaterial*>(mat.get())) { //Copilot fixed this cus i forgot to use phong material as using the "as" thing didnt want to work with threepp
                     phong->color.setRGB(0.5f, 0.5f, 0.5f); // Gray
                 }
             }
@@ -143,7 +143,8 @@ void Excavator::buildHierarchy_() {
     root_->add(baseMesh_);
 
     // --- Left Track Pivot ---
-    // Relative to da base
+    // Create pivot before use (was null -> crash)
+    leftTrackPivot_ = Object3D::create();
     leftTrackPivot_->name = "leftTrackPivot";
     // root has scale=0.01 and rotation=-90°X, so local coords are 100x larger than world
     leftTrackPivot_->position.set(-20.0f, -50.0f, 0.0f); 
@@ -405,10 +406,6 @@ void Excavator::setTracksSpeed(float left_mps, float right_mps) {
 
 void Excavator::setTargetLeftTrackSpeed(float mps) { targetLeftTrackSpeed_ = mps; }
 void Excavator::setTargetRightTrackSpeed(float mps) { targetRightTrackSpeed_ = mps; }
-void Excavator::setTargetTracksSpeed(float left_mps, float right_mps) {
-    targetLeftTrackSpeed_ = left_mps;
-    targetRightTrackSpeed_ = right_mps;
-}
 
 void Excavator::setTurretYaw(float radians) {
     turretYaw_ = radians;
@@ -601,7 +598,7 @@ void Excavator::loadBucket() {
     if (bucketMesh_) {
         bucketMesh_->traverse([](Object3D& obj) {
             if (auto* mesh = obj.as<Mesh>()) {
-                if (auto* mat = mesh->material()->as<MaterialWithColor>()) {
+                if (auto* mat = mesh->material()->as<MaterialWithColor>()) { // Think this is a false error cus its still working so idek
                     mat->color = Color(0.7f, 0.5f, 0.3f); // Sandy brown
                 }
             }
@@ -616,7 +613,7 @@ void Excavator::unloadBucket() {
     if (bucketMesh_) {
         bucketMesh_->traverse([](Object3D& obj) {
             if (auto* mesh = obj.as<Mesh>()) {
-                if (auto* mat = mesh->material()->as<MaterialWithColor>()) {
+                if (auto* mat = mesh->material()->as<MaterialWithColor>()) { // same here, think its a false error
                     mat->color = Color(0.7f, 0.7f, 0.7f); // Gray metal
                 }
             }

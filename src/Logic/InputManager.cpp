@@ -111,37 +111,37 @@ bool InputManager::isKeyPressed(Key key) const {
     int code = static_cast<int>(key);
     return (code >= 0 && code < static_cast<int>(m_keyStates.size())) && m_keyStates[code];
 }
+// Just comenting it out cus its unused but could be useful later
+// bool InputManager::wasKeyJustPressed(Key key) const {
+//     int code = static_cast<int>(key);
+//     return (code >= 0 && code < static_cast<int>(m_keyStates.size())) &&
+//            (m_keyStates[code] && !m_previousKeyStates[code]);
+// }
 
-bool InputManager::wasKeyJustPressed(Key key) const {
-    int code = static_cast<int>(key);
-    return (code >= 0 && code < static_cast<int>(m_keyStates.size())) &&
-           (m_keyStates[code] && !m_previousKeyStates[code]);
-}
+// bool InputManager::wasKeyJustReleased(Key key) const {
+//     int code = static_cast<int>(key);
+//     return (code >= 0 && code < static_cast<int>(m_keyStates.size())) &&
+//            (!m_keyStates[code] && m_previousKeyStates[code]);
+// }
 
-bool InputManager::wasKeyJustReleased(Key key) const {
-    int code = static_cast<int>(key);
-    return (code >= 0 && code < static_cast<int>(m_keyStates.size())) &&
-           (!m_keyStates[code] && m_previousKeyStates[code]);
-}
+// bool InputManager::isMouseButtonPressed(MouseButton button) const {
+//     int code = static_cast<int>(button);
+//     return (code >= 0 && code < static_cast<int>(m_mouseButtonStates.size())) &&
+//            m_mouseButtonStates[code];
+// }
 
-bool InputManager::isMouseButtonPressed(MouseButton button) const {
-    int code = static_cast<int>(button);
-    return (code >= 0 && code < static_cast<int>(m_mouseButtonStates.size())) &&
-           m_mouseButtonStates[code];
-}
+// void InputManager::getMousePosition(double& x, double& y) const {
+//     x = m_mouseX;
+//     y = m_mouseY;
+// }
 
-void InputManager::getMousePosition(double& x, double& y) const {
-    x = m_mouseX;
-    y = m_mouseY;
-}
+// void InputManager::getMouseDelta(double& dx, double& dy) const {
+//     dx = m_mouseDeltaX;
+//     dy = m_mouseDeltaY;
+// }
 
-void InputManager::getMouseDelta(double& dx, double& dy) const {
-    dx = m_mouseDeltaX;
-    dy = m_mouseDeltaY;
-}
-
-void InputManager::setCursorEnabled(bool enabled) {
-    // threepp::Canvas does not currently expose cursor enable/disable.
-    // This is a no-op placeholder to maintain API compatibility.
-    (void)enabled;
-}
+// void InputManager::setCursorEnabled(bool enabled) {
+//     // threepp::Canvas does not currently expose cursor enable/disable.
+//     // This is a no-op placeholder to maintain API compatibility.
+//     (void)enabled;
+// }

@@ -29,18 +29,19 @@ using namespace threepp;
 constexpr float PI = 3.1415927f; // approximate value of pi toavoid math PI errors
 
 int main() {
-    // File log to diagnose startup
     std::ofstream logFile("run.log", std::ios::app);
     logFile << "[start] program begin" << std::endl;
-    // Make the window explicit (title + size) to avoid hidden/zero-size issues
-    Canvas::Parameters params;
-    params.title("Blocks Excavator").size(1280, 720).vsync(true).resizable(true);
-    Canvas canvas(params);
-    logFile << "[init] canvas created" << std::endl;
+    try {
+        Canvas::Parameters params;
+        params.title("Blocks Excavator").size(1280, 720).vsync(true).resizable(true);
+        Canvas canvas(params);
+        logFile << "[init] canvas created" << std::endl;
     Renderer renderer(canvas);
-    renderer.setClearColor(Color(0.5f, 0.7f, 1.0f)); // Set the sky blue
+    logFile << "[init] renderer constructed" << std::endl;
+    renderer.setClearColor(Color(0.5f, 0.7f, 1.0f));
 
     World world;
+    logFile << "[init] world constructed" << std::endl;
 
     // Add lighting so track models aren't black (mainly so we can see the tracks move as the models have minute textures)
     auto ambientLight = AmbientLight::create(Color::white, 0.6f);
@@ -59,7 +60,9 @@ int main() {
     spawnConfig.largeObjectCount = 8;
     
     ObjectSpawner spawner(world.scene(), spawnConfig);
+    logFile << "[init] spawner constructed" << std::endl;
     spawner.generateEnvironment();
+    logFile << "[init] environment generated" << std::endl;
 
     // --- Setup Excavator ---
     // UPDATE THESE PATHS to match your OBJ file locations!
@@ -77,12 +80,14 @@ int main() {
     excavatorPaths.bucket      = "models/Bucket.obj";
 
     Excavator excavator(excavatorPaths, world.scene());
+    logFile << "[init] excavator constructed" << std::endl;
 
     // Position the excavator in the world (lift it up so it sits on the plane)
     excavator.root()->position.set(0, 0, 0);
     
     // --- Particle System ---
     ParticleSystem particleSystem(world.scene());
+    logFile << "[init] particleSystem constructed" << std::endl;
     excavator.setParticleSystem(&particleSystem);
     
     // --- Castle + Doorway Pile ---
@@ -315,11 +320,13 @@ int main() {
     }
 
     // Place the dig pile at the dynamically computed doorway position
-    DigZone digZone(pilePos, 3.0f); // Restore pile radius to original size
+    DigZone digZone(pilePos, 3.0f);
+    logFile << "[init] digZone constructed" << std::endl;
     world.scene().add(digZone.getVisual());
     CollisionWorld::addRockMeshColliderFromObject(*digZone.getVisual());
     
-    DumpZone dumpZone(Vector3(10, 0, -10), 3.0f); // Dump area on the right
+    DumpZone dumpZone(Vector3(10, 0, -10), 3.0f);
+    logFile << "[init] dumpZone constructed" << std::endl;
     world.scene().add(dumpZone.getVisual());
     
     std::cout << "Excavator root has " << excavator.root()->children.size() << " children\n";
@@ -407,6 +414,7 @@ int main() {
     AudioListener audioListener;
     camera.add(audioListener); // Attach listener to camera
     AudioManager audioManager(audioListener);
+    logFile << "[init] audioManager constructed" << std::endl;
     
     // Load sound files
     audioManager.loadStartupSound(resolveAssetPath("models/startExcavator.wav"));
@@ -421,10 +429,12 @@ int main() {
 
     // --- Coin System ---
     CoinManager coinManager(world.scene());
+    logFile << "[init] coinManager constructed" << std::endl;
     coinManager.spawnCoins(15, spawnConfig.arenaRadius); // 15 coins scattered around
 
     // --- Track marks ---
     TrackMarkManager trackMarks(world.scene());
+    logFile << "[init] trackMarks constructed" << std::endl;
     // Spawn marks 1.5x quicker: reduce distance (0.6 / 1.5 ≈ 0.4)
     trackMarks.setSpawnDistance(0.4f);
     trackMarks.setLifetime(3.f);       // disappear after 3 seconds
@@ -624,6 +634,7 @@ int main() {
     canvas.addMouseListener(orbitListener);
 
     // --- Animate ---
+    logFile << "[loop] starting animate" << std::endl;
     logFile << "[loop] starting animate" << std::endl;
     canvas.animate([&] {
         float dt = clock.getDelta();
@@ -866,6 +877,16 @@ int main() {
     });
     logFile << "[end] exited animate" << std::endl;
     logFile.close();
-
     return 0;
+    } catch (const std::exception& e) {
+        logFile << "[error] exception: " << e.what() << std::endl;
+        logFile.close();
+        std::cerr << "Fatal exception: " << e.what() << std::endl;
+        return 1;
+    } catch (...) {
+        logFile << "[error] unknown exception" << std::endl;
+        logFile.close();
+        std::cerr << "Fatal unknown exception" << std::endl;
+        return 1;
+    }
 }

@@ -11,5 +11,3 @@ World::World()
 
 Scene& World::scene() { return *scene_; }
 const Scene& World::scene() const { return *scene_; }
-
-Mesh* World::plane() { return plane_.get(); }

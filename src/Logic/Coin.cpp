@@ -11,13 +11,13 @@ Coin::Coin(const threepp::Vector3& position, std::shared_ptr<threepp::Mesh> mesh
 
 void Coin::update(float dt) {
     if (collected_) return;
-    
+
     time_ += dt;
-    
-    // Rotate around Z axis (coin spinning flat)
+
+    // Spin
     mesh_->rotation.z += rotationSpeed_ * dt;
-    
-    // Bob up and down
+
+    // Bob up and down (slow sine)
     float bob = std::sin(time_ * bobSpeed_) * bobHeight_;
     mesh_->position.y = position_.y + bob;
 }

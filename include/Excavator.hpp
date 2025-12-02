@@ -74,7 +74,6 @@ public:
     // Target (desired) speeds: will be reached gradually using acceleration
     void setTargetLeftTrackSpeed(float mps);
     void setTargetRightTrackSpeed(float mps);
-    void setTargetTracksSpeed(float left_mps, float right_mps);
 
     // --- Joint control (angles in radians) ---
     void setTurretYaw(float radians);           // Rotate turret around vertical axis

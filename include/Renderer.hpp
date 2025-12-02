@@ -1,13 +1,14 @@
 #pragma once
 
 #include <memory>
+#include <threepp/renderers/GLRenderer.hpp>
 
+// Forward declarations for parameters
 namespace threepp {
-class Canvas;
-class Scene;
-class Camera;
-class GLRenderer;
-class Color;
+    class Canvas;
+    class Scene;
+    class Camera;
+    class Color;
 }
 
 // Renderer: wraps threepp::GLRenderer and renders a Scene on a Canvas.
@@ -31,6 +32,5 @@ public:
 private:
     threepp::Canvas& canvas_;
     std::unique_ptr<threepp::GLRenderer> renderer_;
-
     void hookResize_();
 };
