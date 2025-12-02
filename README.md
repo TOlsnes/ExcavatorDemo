@@ -1,5 +1,7 @@
 <h1>Threepp Excavator</h1>
 
+<h2>KANDIDATNR: 10013</h2>
+
 [![CI](https://github.com/TOlsnes/ThreeppExcavator/actions/workflows/ci.yml/badge.svg)](https://github.com/TOlsnes/ThreeppExcavator/actions/workflows/ci.yml)
 
 Threepp Excavator is a 3D simulation demo featuring an articulated excavator with physics-based collision detection, particle effects, audio integration, and interactive gameplay elements.
