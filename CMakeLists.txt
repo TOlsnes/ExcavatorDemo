@@ -123,6 +123,7 @@ add_executable(blocks_tests
         tests/test_collision.cpp
         tests/test_particle.cpp
         tests/test_coin.cpp
+        tests/test_zones.cpp
 )
 
 target_link_libraries(blocks_tests PRIVATE blocks_lib Catch2::Catch2WithMain)

@@ -1,9 +1,6 @@
 #include <threepp/threepp.hpp>
 #include <iostream>
-#include <numbers>
 #include <fstream>
-#include <array>
-#include <tuple>
 #include <cmath>
 
 #include "World.hpp"
@@ -25,8 +22,6 @@
 #include "threepp/extras/imgui/ImguiContext.hpp"
 
 using namespace threepp;
-
-constexpr float PI = 3.1415927f; // approximate value of pi toavoid math PI errors
 
 int main() {
     std::ofstream logFile("run.log", std::ios::app);
@@ -104,171 +99,81 @@ int main() {
         return rel;
     };
 
-    // Castle placement config
+    // --- Load Castle ---
     const Vector3 castlePos{0, 0, 18};
-    const float castleScale = 0.03f; // scaled up 1.5x from previous (0.02 -> 0.03)
-    const float doorwayOffsetWorld = 2.3f; // world-space distance from castle center to doorway pile
-    // These will be determined dynamically after final castle orientation
-    Vector3 doorwayDirWorld; // normalized world-space doorway direction
-    Vector3 pilePos;         // world-space pile position derived from doorway
-
-    // Load castle or split wall parts if present
+    const float castleScale = 0.03f;
+    const float doorwayOffsetWorld = 2.3f;
+    
+    // Helper to align castle to ground
+    auto alignToGround = [](std::shared_ptr<Object3D> obj) {
+        obj->updateMatrixWorld(true);
+        threepp::Box3 box;
+        box.setFromObject(*obj, false);
+        auto bmin = box.min();
+        if (bmin.y != 0.f) obj->position.y -= bmin.y;
+    };
+    
+    OBJLoader loader;
     std::shared_ptr<Object3D> castle;
-    {
-        using std::filesystem::exists;
-        using std::filesystem::path;
-
-        threepp::OBJLoader loader;
-
-        // Try loading split wall/door parts from models/ (WallLeft, WallRight, WallBack, DoorLeft, DoorRight)
-        std::vector<std::string> partNames = {"WallLeft", "WallRight", "WallBack", "DoorLeft", "DoorRight"};
-        std::vector<std::shared_ptr<Object3D>> loadedParts;
-        for (const auto& name : partNames) {
-            auto partPath = resolveAssetPath("models/" + name + ".obj");
-            try {
-                auto part = loader.load(partPath, true);
-                if (part) {
-                    loadedParts.push_back(part);
-                }
-            } catch (...) {
-                // part missing or load error; skip
-            }
+    Vector3 pilePos;
+    
+    // Try loading split wall/door parts
+    std::vector<std::string> partNames = {"WallLeft", "WallRight", "WallBack", "DoorLeft", "DoorRight"};
+    std::vector<std::shared_ptr<Object3D>> loadedParts;
+    for (const auto& name : partNames) {
+        try {
+            auto part = loader.load(resolveAssetPath("models/" + name + ".obj"), true);
+            if (part) loadedParts.push_back(part);
+        } catch (...) {}
+    }
+    
+    if (!loadedParts.empty()) {
+        // Load split castle parts (with natural doorway gap)
+        castle = Object3D::create();
+        castle->position.copy(castlePos);
+        castle->scale.setScalar(castleScale);
+        for (auto& p : loadedParts) castle->add(p);
+        
+        // Orient: X+90° -> X+180° -> Z+90°
+        castle->rotation.x = threepp::math::PI * 1.5f;
+        castle->rotation.z = threepp::math::PI / 2.0f;
+        alignToGround(castle);
+        
+        // Pile position toward center
+        Vector3 toCenter = Vector3(0,0,0) - castle->position;
+        toCenter.normalize();
+        pilePos = castle->position + toCenter * doorwayOffsetWorld;
+        
+        world.scene().add(castle);
+        for (auto& child : castle->children) {
+            if (child) CollisionWorld::addRockMeshColliderFromObject(*child);
         }
-
-        if (!loadedParts.empty()) {
-            auto castleGroup = Object3D::create();
-            castleGroup->position.copy(castlePos);
-            castleGroup->scale.setScalar(castleScale);
-            for (auto& p : loadedParts) castleGroup->add(p);
-
-            // Apply the same orientation tweaks as before
-            castleGroup->rotation.x += threepp::math::PI / 2.0f;
-            castleGroup->updateMatrixWorld(true);
-            {
-                threepp::Box3 box;
-                box.setFromObject(*castleGroup, false);
-                auto bmin = box.min();
-                if (bmin.y != 0.f) castleGroup->position.y -= bmin.y;
-            }
-            castleGroup->rotation.x += threepp::math::PI; // 180° flip
-            castleGroup->rotation.y = 0.f;
-            castleGroup->rotation.z += threepp::math::PI / 2.0f; // 90° about Z
-            castleGroup->updateMatrixWorld(true);
-            {
-                threepp::Box3 box;
-                box.setFromObject(*castleGroup, false);
-                auto bmin = box.min();
-                if (bmin.y != 0.f) castleGroup->position.y -= bmin.y;
-            }
-
-            // Derive direction from castle toward arena center for pile placement at doorway
-            threepp::Vector3 toCenter = threepp::Vector3(0,0,0) - castleGroup->position; toCenter.normalize();
-            doorwayDirWorld = toCenter; // pile should be between castle and center (at doorway)
-            pilePos = castleGroup->position + doorwayDirWorld * doorwayOffsetWorld;
-            std::cout << "[CastleParts] Loaded " << loadedParts.size() << " wall/door parts, pile at: " 
-                      << pilePos.x << "," << pilePos.y << "," << pilePos.z << std::endl;
-
-            // Add per-part mesh colliders (keeps doorway as a gap)
-            for (auto& child : castleGroup->children) {
-                if (child) CollisionWorld::addRockMeshColliderFromObject(*child);
-            }
-
-            world.scene().add(castleGroup);
-            castle = castleGroup;
-        }
-
-        // Fallback: single Castle.obj
-        if (!castle) {
-            threepp::OBJLoader loader;
-            auto path = resolveAssetPath("models/Castle.obj");
-            castle = loader.load(path, true);
-            if (castle) {
-                castle->position.copy(castlePos);
-                castle->scale.setScalar(castleScale);
-
-                auto applyRotationAndGetHeight = [&](float rx, float ry, float rz) -> std::pair<float, threepp::Box3> {
-                    castle->rotation.set(rx, ry, rz);
-                    castle->updateMatrixWorld(true);
-                    threepp::Box3 box;
-                    box.setFromObject(*castle, false);
-                    threepp::Vector3 size; box.getSize(size);
-                    return {size.y, box};
-                };
-
-                std::array<std::tuple<float,float,float>,5> candidates = {
-                    std::make_tuple(0.f, 0.f, 0.f),
-                    std::make_tuple(threepp::math::PI / 2.0f, 0.f, 0.f),
-                    std::make_tuple(-threepp::math::PI / 2.0f, 0.f, 0.f),
-                    std::make_tuple(0.f, 0.f, threepp::math::PI / 2.0f),
-                    std::make_tuple(0.f, 0.f, -threepp::math::PI / 2.0f)
-                };
-
-                float bestH = -1.f; threepp::Box3 bestBox; std::tuple<float,float,float> bestRot = candidates[0];
-                for (auto& rot : candidates) {
-                    auto [rx, ry, rz] = rot;
-                    auto [h, box] = applyRotationAndGetHeight(rx, ry, rz);
-                    if (h > bestH) { bestH = h; bestRot = rot; bestBox = box; }
-                }
-
-                auto [brx, bry, brz] = bestRot;
-                castle->rotation.set(brx, bry, brz);
-                castle->updateMatrixWorld(true);
-
-                auto bmin = bestBox.min();
-                if (bmin.y != 0.f) {
-                    castle->position.y -= bmin.y;
-                }
-
-                castle->rotation.x += threepp::math::PI / 2.0f;
-                castle->updateMatrixWorld(true);
-                {
-                    threepp::Box3 boxAfter;
-                    boxAfter.setFromObject(*castle, false);
-                    auto bminAfter = boxAfter.min();
-                    if (bminAfter.y != 0.f) castle->position.y -= bminAfter.y;
-                }
-
-                castle->rotation.x += threepp::math::PI; // 180° flip
-                castle->updateMatrixWorld(true);
-                {
-                    threepp::Box3 boxAfter2;
-                    boxAfter2.setFromObject(*castle, false);
-                    auto bminAfter2 = boxAfter2.min();
-                    if (bminAfter2.y != 0.f) castle->position.y -= bminAfter2.y;
-                }
-
-                // Manual 90° Z rotation
-                castle->rotation.y = 0.f;
-                castle->rotation.z += threepp::math::PI / 2.0f;
-                castle->updateMatrixWorld(true);
-                doorwayDirWorld.set(0,0,-1);
-                doorwayDirWorld.applyEuler(castle->rotation);
-                doorwayDirWorld.normalize();
-                pilePos = castle->position + doorwayDirWorld * doorwayOffsetWorld;
-                std::cout << "[Castle] Applied 90deg Z rotation. DoorwayDir="
-                          << doorwayDirWorld.x << "," << doorwayDirWorld.y << "," << doorwayDirWorld.z << std::endl;
-
-                world.scene().add(castle);
-                // Single convex collider for whole castle
-                CollisionWorld::addRockMeshColliderFromObject(*castle);
-
-                // Keep interior pass-through via doorway zone for single-mesh fallback
-                threepp::Vector3 toCenter = threepp::Vector3(0,0,0) - castle->position; toCenter.normalize();
-                float doorYaw = std::atan2(toCenter.x, toCenter.z);
-                CollisionWorld::NoCollisionZone doorZone{};
-                doorZone.center = castle->position - toCenter * (doorwayOffsetWorld + 0.25f);
-                doorZone.halfWidth = 1.2f;
-                doorZone.halfDepth = 0.35f;
-                doorZone.yaw = doorYaw;
-                CollisionWorld::addNoCollisionZone(doorZone);
-                std::cout << "[DoorZone] center=" << doorZone.center.x << "," << doorZone.center.z
-                          << " yaw(deg)=" << (doorYaw * 180.0f / PI)
-                          << " hw=" << doorZone.halfWidth << " hd=" << doorZone.halfDepth << std::endl;
-            } else {
-                std::cout << "[Castle] models/Castle.obj not found (loading skipped)." << std::endl;
-                doorwayDirWorld.set(0,0,-1);
-                pilePos = castlePos + doorwayDirWorld * doorwayOffsetWorld;
-            }
+    } else {
+        // Fallback: single Castle.obj with no-collision doorway zone
+        try {
+            castle = loader.load(resolveAssetPath("models/Castle.obj"), true);
+            castle->position.copy(castlePos);
+            castle->scale.setScalar(castleScale);
+            castle->rotation.set(threepp::math::PI * 1.5f, 0.f, threepp::math::PI / 2.0f);
+            alignToGround(castle);
+            
+            Vector3 toCenter = Vector3(0,0,0) - castle->position;
+            toCenter.normalize();
+            pilePos = castle->position + toCenter * doorwayOffsetWorld;
+            
+            world.scene().add(castle);
+            CollisionWorld::addRockMeshColliderFromObject(*castle);
+            
+            // Add doorway pass-through zone
+            CollisionWorld::NoCollisionZone doorZone{
+                castle->position - toCenter * (doorwayOffsetWorld + 0.25f),
+                1.2f, 0.35f,
+                std::atan2(toCenter.x, toCenter.z)
+            };
+            CollisionWorld::addNoCollisionZone(doorZone);
+        } catch (...) {
+            // No castle available - default pile position
+            pilePos = castlePos + Vector3(0, 0, -doorwayOffsetWorld);
         }
     }
 
@@ -286,10 +191,10 @@ int main() {
             // Place 8 rails around the perimeter in a circle
             const int railCount = 8;
             const float railRadius = 20.0f; // Closer to center
-            const float angleOffset = 22.5f * (PI / 180.0f); // Offset by 22.5 degrees
+            const float angleOffset = 22.5f * (threepp::math::PI / 180.0f); // Offset by 22.5 degrees
             
             for (int i = 0; i < railCount; i++) {
-                float angle = (i / float(railCount)) * 2.0f * PI + angleOffset;
+                float angle = (i / float(railCount)) * 2.0f * threepp::math::PI + angleOffset;
                 
                 auto rail = railTemplate->clone();
                 
@@ -297,7 +202,7 @@ int main() {
                 rail->scale.setScalar(0.04f);
                 
                 // Rotate rail to stand upright
-                rail->rotation.x = -PI / 2.0f; // Stand upright (flipped)
+                rail->rotation.x = -threepp::math::PI / 2.0f; // Stand upright (flipped)
                 rail->rotation.z = angle; // Align with circle tangent
                 
                 rail->updateMatrixWorld(true);
@@ -350,7 +255,7 @@ int main() {
     bool isMouseButtonDown = false;
     float cameraDistance = 7.0f; // Move camera closer (was 10.5f)
     float cameraAngleH = 0.0f;  // horizontal angle (around Y axis) - start behind excavator
-    float cameraAngleV = PI * 0.35f;  // vertical angle (up/down) - lower camera
+    float cameraAngleV = threepp::math::PI * 0.35f;  // vertical angle (up/down) - lower camera
     Vector2 lastMousePos;
 
     // --- Control state ---
@@ -359,25 +264,11 @@ int main() {
     bool rDown = false, fDown = false;
     bool tDown = false, gDown = false;
     bool yDown = false, hDown = false;
-    // Debug alignment keys
-    bool flipStick = false, flipBucket = false;
-    bool nudgeStickPos = false, nudgeStickNeg = false;
-    bool nudgeBucketPos = false, nudgeBucketNeg = false;
-    // Pivot nudges
-    bool nudgeStickPivotPos = false, nudgeStickPivotNeg = false;
-    bool nudgeBucketPivotPos = false, nudgeBucketPivotNeg = false;
-    // Nudge step size (in local units before scaling)
-    float pivotStep = 0.5f; // start with a larger step so it's visible
 
     // --- Audio state ---
     float idleTargetVolume = 0.18f;   // desired idle volume based on speed
     float idleVolumeSmoothed = 0.18f; // smoothed idle volume to avoid clicks
     float masterVolume = 1.0f; // UI-controllable master volume
-    
-    // Arm movement tracking for hydraulics/steam sounds
-    bool boomMovingUp = false, boomMovingDown = false;
-    bool stickMovingUp = false, stickMovingDown = false;
-    bool bucketMovingUp = false, bucketMovingDown = false;
     float prevBoomAngle = 0.0f;
     float prevStickAngle = 0.0f;
     float prevBucketAngle = 0.0f;
@@ -514,9 +405,6 @@ int main() {
         rDown = fDown = false;
         tDown = gDown = false;
         yDown = hDown = false;
-        flipStick = flipBucket = false;
-        nudgeStickPivotPos = nudgeStickPivotNeg = false;
-        nudgeBucketPivotPos = nudgeBucketPivotNeg = false;
         isMouseButtonDown = false;
         
         // Restart engine audio
@@ -541,14 +429,6 @@ int main() {
             case Key::G: gDown = true; break;
             case Key::Y: yDown = true; break;
             case Key::H: hDown = true; break;
-            case Key::U: flipStick = true; break;
-            case Key::I: flipBucket = true; break;
-            case Key::J: nudgeStickPivotNeg = true; break;    // move stick pivot -Z
-            case Key::K: nudgeStickPivotPos = true; break;    // move stick pivot +Z
-            case Key::N: nudgeBucketPivotNeg = true; break;   // move bucket pivot -Z
-            case Key::M: nudgeBucketPivotPos = true; break;   // move bucket pivot +Z
-            case Key::Z: pivotStep = std::max(0.01f, pivotStep * 0.5f); std::cout << "pivotStep=" << pivotStep << "\n"; break;
-            case Key::X: pivotStep = std::min(100.0f, pivotStep * 2.0f); std::cout << "pivotStep=" << pivotStep << "\n"; break;
             case Key::V: 
                 showCollisionDebug = !showCollisionDebug;
                 std::cout << "Collision debug: " << (showCollisionDebug ? "ON" : "OFF") << "\n";
@@ -574,14 +454,6 @@ int main() {
             case Key::G: gDown = false; break;
             case Key::Y: yDown = false; break;
             case Key::H: hDown = false; break;
-            case Key::U: flipStick = false; break;
-            case Key::I: flipBucket = false; break;
-            case Key::J: nudgeStickPivotNeg = false; break;
-            case Key::K: nudgeStickPivotPos = false; break;
-            case Key::N: nudgeBucketPivotNeg = false; break;
-            case Key::M: nudgeBucketPivotPos = false; break;
-            case Key::Z: /* handled on press */ break;
-            case Key::X: /* handled on press */ break;
             default: break;
         }
     });
@@ -622,7 +494,7 @@ int main() {
                 cameraAngleH += delta.x * sensitivity;  // horizontal rotation (reversed)
                 // Keep camera in top hemisphere: cap at just above horizon (PI/2)
                 const float vMin = 0.1f;
-                const float vMax = PI * 0.5f - 0.05f; // avoid dipping below ground plane
+                const float vMax = threepp::math::PI * 0.5f - 0.05f; // avoid dipping below ground plane
                 cameraAngleV = std::clamp(cameraAngleV - delta.y * sensitivity, vMin, vMax);
                 
                 lastMousePos = pos;
@@ -634,7 +506,6 @@ int main() {
     canvas.addMouseListener(orbitListener);
 
     // --- Animate ---
-    logFile << "[loop] starting animate" << std::endl;
     logFile << "[loop] starting animate" << std::endl;
     canvas.animate([&] {
         float dt = clock.getDelta();
@@ -697,94 +568,47 @@ int main() {
         if (eDown) turretYaw -= turretSpeed * dt;
         excavator.setTurretYaw(turretYaw);
 
-        // --- Boom control (R/F) ---
-        float boomSpeed = 0.5f; // rad/s
+        // --- Arm control with audio feedback ---
+        auto updateJoint = [&](bool upKey, bool downKey, float speed, float& angle, float& prevAngle,
+                               auto setAngle, float hydVolume, float steamVolume) {
+            if (upKey) angle += speed * dt;
+            if (downKey) angle -= speed * dt;
+            setAngle(angle);
+            
+            float newAngle = angle;
+            bool moved = std::abs(newAngle - prevAngle) > 0.0001f;
+            
+            if (upKey && moved) {
+                audioManager.playHydraulics(hydVolume);
+            } else if (upKey && !moved) {
+                audioManager.stopHydraulics();
+            }
+            
+            if (downKey && moved) {
+                audioManager.playSteam(steamVolume);
+            } else if (downKey && !moved) {
+                audioManager.stopSteam();
+            }
+            
+            prevAngle = newAngle;
+        };
+
+        // Boom (R/F)
         float boomAngle = excavator.getBoomAngle();
-        boomMovingUp = rDown;
-        boomMovingDown = fDown;
-        if (rDown) boomAngle += boomSpeed * dt;
-        if (fDown) boomAngle -= boomSpeed * dt;
-        excavator.setBoomAngle(boomAngle);
-        
-        // Only play sound if boom actually moved
-        float newBoomAngle = excavator.getBoomAngle();
-        bool boomMoved = std::abs(newBoomAngle - prevBoomAngle) > 0.0001f;
-        if (rDown && boomMoved) {
-            audioManager.playHydraulics(0.5f); // Boom: loudest
-        } else if (rDown && !boomMoved) {
-            audioManager.stopHydraulics();
-        }
-        if (fDown && boomMoved) {
-            audioManager.playSteam(0.45f); // Boom: loudest
-        } else if (fDown && !boomMoved) {
-            audioManager.stopSteam();
-        }
-        if (!rDown && !tDown && !yDown) {
-            audioManager.stopHydraulics();
-        }
-        if (!fDown && !gDown && !hDown) {
-            audioManager.stopSteam();
-        }
-        prevBoomAngle = newBoomAngle;
+        updateJoint(rDown, fDown, 0.5f, boomAngle, prevBoomAngle,
+                   [&](float a) { excavator.setBoomAngle(a); }, 0.5f, 0.45f);
 
-        // --- Stick control (T/G) ---
-        float stickSpeed = 0.5f;
+        // Stick (T/G)
         float stickAngle = excavator.getStickAngle();
-        stickMovingUp = tDown;
-        stickMovingDown = gDown;
-        if (tDown) stickAngle += stickSpeed * dt;
-        if (gDown) stickAngle -= stickSpeed * dt;
-        excavator.setStickAngle(stickAngle);
-        
-        // Only play sound if stick actually moved
-        float newStickAngle = excavator.getStickAngle();
-        bool stickMoved = std::abs(newStickAngle - prevStickAngle) > 0.0001f;
-        if (tDown && !rDown && stickMoved) {
-            audioManager.playHydraulics(0.35f); // Stick: medium volume
-        } else if (tDown && !rDown && !stickMoved) {
-            audioManager.stopHydraulics();
-        }
-        if (gDown && !fDown && stickMoved) {
-            audioManager.playSteam(0.30f); // Stick: medium volume
-        } else if (gDown && !fDown && !stickMoved) {
-            audioManager.stopSteam();
-        }
-        prevStickAngle = newStickAngle;
+        updateJoint(tDown && !rDown, gDown && !fDown, 0.5f, stickAngle, prevStickAngle,
+                   [&](float a) { excavator.setStickAngle(a); }, 0.35f, 0.30f);
 
-        // --- Bucket control (Y/H) ---
-        float bucketSpeed = 0.5f;
+        // Bucket (Y/H)
         float bucketAngle = excavator.getBucketAngle();
-        bucketMovingUp = yDown;
-        bucketMovingDown = hDown;
-        if (yDown) bucketAngle += bucketSpeed * dt;
-        if (hDown) bucketAngle -= bucketSpeed * dt;
-        excavator.setBucketAngle(bucketAngle);
-        
-        // Only play sound if bucket actually moved
-        float newBucketAngle = excavator.getBucketAngle();
-        bool bucketMoved = std::abs(newBucketAngle - prevBucketAngle) > 0.0001f;
-        if (yDown && !rDown && !tDown && bucketMoved) {
-            audioManager.playHydraulics(0.25f); // Bucket: quietest
-        } else if (yDown && !rDown && !tDown && !bucketMoved) {
-            audioManager.stopHydraulics();
-        }
-        if (hDown && !fDown && !gDown && bucketMoved) {
-            audioManager.playSteam(0.22f); // Bucket: quietest
-        } else if (hDown && !fDown && !gDown && !bucketMoved) {
-            audioManager.stopSteam();
-        }
-        prevBucketAngle = newBucketAngle;
+        updateJoint(yDown && !rDown && !tDown, hDown && !fDown && !gDown, 0.5f, bucketAngle, prevBucketAngle,
+                   [&](float a) { excavator.setBucketAngle(a); }, 0.25f, 0.22f);
 
-    // Debug: alignment controls
-    if (flipStick) { excavator.flipStickHingeEnd(); flipStick = false; }
-    if (flipBucket) { excavator.flipBucketHingeEnd(); flipBucket = false; }
-            // Use larger step (world units); conversion to local is handled inside Excavator
-            if (nudgeStickPivotPos) { excavator.nudgeStickPivotZ(+0.1f); }
-            if (nudgeStickPivotNeg) { excavator.nudgeStickPivotZ(-0.1f); }
-            if (nudgeBucketPivotPos) { excavator.nudgeBucketPivotZ(+0.1f); }
-            if (nudgeBucketPivotNeg) { excavator.nudgeBucketPivotZ(-0.1f); }
-
-    // Update excavator (track animation)
+        // Update excavator (track animation)
         excavator.update(dt);
         
         // Update track marks before coin collection (uses excavator position)
