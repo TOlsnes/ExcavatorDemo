@@ -59,20 +59,34 @@ int main() {
     spawner.generateEnvironment();
     logFile << "[init] environment generated" << std::endl;
 
+    // Asset path resolver (works from build dirs too)
+    auto resolveAssetPath = [](const std::string& rel) -> std::string {
+        using std::filesystem::exists;
+        using std::filesystem::path;
+        const path candidates[] = {
+            path(rel),
+            path("../") / rel,
+            path("../../") / rel,
+            path("../../../") / rel
+        };
+        for (const auto& p : candidates) if (exists(p)) return p.string();
+        return rel;
+    };
+
     // --- Setup Excavator ---
     // UPDATE THESE PATHS to match your OBJ file locations!
     Excavator::Paths excavatorPaths;
-    excavatorPaths.leftTrack0  = "models/TrackAnimation1.obj";
-    excavatorPaths.leftTrack1  = "models/TrackAnimation2.obj";
-    excavatorPaths.leftTrack2  = "models/TrackAnimation3.obj";
-    excavatorPaths.rightTrack0 = "models/TrackAnimation1.obj";
-    excavatorPaths.rightTrack1 = "models/TrackAnimation2.obj";
-    excavatorPaths.rightTrack2 = "models/TrackAnimation3.obj";
-    excavatorPaths.base        = "models/BasePlate.obj";
-    excavatorPaths.body        = "models/MainBody.obj";
-    excavatorPaths.arm1        = "models/Arm1.obj";
-    excavatorPaths.arm2        = "models/Arm2.obj";
-    excavatorPaths.bucket      = "models/Bucket.obj";
+    excavatorPaths.leftTrack0  = resolveAssetPath("models/TrackAnimation1.obj");
+    excavatorPaths.leftTrack1  = resolveAssetPath("models/TrackAnimation2.obj");
+    excavatorPaths.leftTrack2  = resolveAssetPath("models/TrackAnimation3.obj");
+    excavatorPaths.rightTrack0 = resolveAssetPath("models/TrackAnimation1.obj");
+    excavatorPaths.rightTrack1 = resolveAssetPath("models/TrackAnimation2.obj");
+    excavatorPaths.rightTrack2 = resolveAssetPath("models/TrackAnimation3.obj");
+    excavatorPaths.base        = resolveAssetPath("models/BasePlate.obj");
+    excavatorPaths.body        = resolveAssetPath("models/MainBody.obj");
+    excavatorPaths.arm1        = resolveAssetPath("models/Arm1.obj");
+    excavatorPaths.arm2        = resolveAssetPath("models/Arm2.obj");
+    excavatorPaths.bucket      = resolveAssetPath("models/Bucket.obj");
 
     Excavator excavator(excavatorPaths, world.scene());
     logFile << "[init] excavator constructed" << std::endl;
@@ -86,18 +100,6 @@ int main() {
     excavator.setParticleSystem(&particleSystem);
     
     // --- Castle + Doorway Pile ---
-    auto resolveAssetPath = [](const std::string& rel) -> std::string {
-        using std::filesystem::exists;
-        using std::filesystem::path;
-        const path candidates[] = {
-            path(rel),
-            path("../") / rel,
-            path("../../") / rel,
-            path("../../../") / rel
-        };
-        for (const auto& p : candidates) if (exists(p)) return p.string();
-        return rel;
-    };
 
     // --- Load Castle ---
     const Vector3 castlePos{0, 0, 18};
