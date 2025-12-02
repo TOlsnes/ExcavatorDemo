@@ -30,6 +30,9 @@ namespace {
     }
 }
 
+ObjectSpawner::ObjectSpawner(Scene& scene)
+    : ObjectSpawner(scene, SpawnConfig{}) {}
+
 ObjectSpawner::ObjectSpawner(Scene& scene, const SpawnConfig& config)
     : scene_(scene), config_(config), rng_(config.randomSeed) {}
 

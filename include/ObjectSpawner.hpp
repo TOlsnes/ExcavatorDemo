@@ -19,7 +19,8 @@ public:
         unsigned int randomSeed = 12345;    // For reproducible generation
     };
 
-    ObjectSpawner(threepp::Scene& scene, const SpawnConfig& config = {});
+    explicit ObjectSpawner(threepp::Scene& scene);
+    ObjectSpawner(threepp::Scene& scene, const SpawnConfig& config);
 
     // Generate and place all environment objects
     void generateEnvironment();
