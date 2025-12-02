@@ -74,7 +74,6 @@ int main() {
     };
 
     // --- Setup Excavator ---
-    // UPDATE THESE PATHS to match your OBJ file locations!
     Excavator::Paths excavatorPaths;
     excavatorPaths.leftTrack0  = resolveAssetPath("models/TrackAnimation1.obj");
     excavatorPaths.leftTrack1  = resolveAssetPath("models/TrackAnimation2.obj");
@@ -100,7 +99,6 @@ int main() {
     excavator.setParticleSystem(&particleSystem);
     
     // --- Castle + Doorway Pile ---
-
     // --- Load Castle ---
     const Vector3 castlePos{0, 0, 18};
     const float castleScale = 0.03f;
@@ -119,7 +117,7 @@ int main() {
     std::shared_ptr<Object3D> castle;
     Vector3 pilePos;
     
-    // Try loading split wall/door parts
+    // Try loading split wall/door parts, instead of a single model so that i dont need to worry about being able to drive through an empty model ( was air colliding)
     std::vector<std::string> partNames = {"WallLeft", "WallRight", "WallBack", "DoorLeft", "DoorRight"};
     std::vector<std::shared_ptr<Object3D>> loadedParts;
     for (const auto& name : partNames) {
@@ -136,7 +134,7 @@ int main() {
         castle->scale.setScalar(castleScale);
         for (auto& p : loadedParts) castle->add(p);
         
-        // Orient: X+90° -> X+180° -> Z+90°
+        // Orient: X+90° -> X+180° -> Z+90° (idk but it works so dont touch it)
         castle->rotation.x = threepp::math::PI * 1.5f;
         castle->rotation.z = threepp::math::PI / 2.0f;
         alignToGround(castle);
@@ -179,7 +177,7 @@ int main() {
         }
     }
 
-    // --- Place Rails around perimeter ---
+    // --- Place Rails around perimeter for the (assorted objects requirenmetn) ---
     {
         auto railPath = resolveAssetPath("models/rAIL.obj");
         std::cout << "Loading rail from " << railPath << " (with .mtl)..." << std::endl;
@@ -190,10 +188,10 @@ int main() {
         if (railTemplate) {
             std::cout << "Rail template loaded successfully!" << std::endl;
             
-            // Place 8 rails around the perimeter in a circle
+            // Place 8 rails around the perimeter in a circle cus i cant be bothered to fix them spawning inside other models
             const int railCount = 8;
-            const float railRadius = 20.0f; // Closer to center
-            const float angleOffset = 22.5f * (threepp::math::PI / 180.0f); // Offset by 22.5 degrees
+            const float railRadius = 20.0f; // Closer to center cus they were clipping in da rocks
+            const float angleOffset = 22.5f * (threepp::math::PI / 180.0f); // Offset by 22.5 degrees so they dont look boring
             
             for (int i = 0; i < railCount; i++) {
                 float angle = (i / float(railCount)) * 2.0f * threepp::math::PI + angleOffset;
@@ -203,7 +201,7 @@ int main() {
                 // Scale rail appropriately
                 rail->scale.setScalar(0.04f);
                 
-                // Rotate rail to stand upright
+                // Rotate rail to stand upright (idk but everything seems to be the wrong way round)
                 rail->rotation.x = -threepp::math::PI / 2.0f; // Stand upright (flipped)
                 rail->rotation.z = angle; // Align with circle tangent
                 
@@ -226,7 +224,7 @@ int main() {
         }
     }
 
-    // Place the dig pile at the dynamically computed doorway position
+    // Place the dig pile at the doorway position
     DigZone digZone(pilePos, 3.0f);
     logFile << "[init] digZone constructed" << std::endl;
     world.scene().add(digZone.getVisual());
@@ -253,7 +251,7 @@ int main() {
 
     Clock clock;
 
-    // --- Camera orbit state ---
+    // --- Camera orbit state --- (thinking of giving it a hitbox or something so it doesnt clip through objects but thats for later)
     bool isMouseButtonDown = false;
     float cameraDistance = 7.0f; // Move camera closer (was 10.5f)
     float cameraAngleH = 0.0f;  // horizontal angle (around Y axis) - start behind excavator
@@ -270,12 +268,12 @@ int main() {
     // --- Audio state ---
     float idleTargetVolume = 0.18f;   // desired idle volume based on speed
     float idleVolumeSmoothed = 0.18f; // smoothed idle volume to avoid clicks
-    float masterVolume = 1.0f; // UI-controllable master volume
+    float masterVolume = 1.0f; // UI-controllable master volume cus loud lol
     float prevBoomAngle = 0.0f;
     float prevStickAngle = 0.0f;
     float prevBucketAngle = 0.0f;
 
-    // Debug collision visualization
+    // Debug collision visualization cus im stil colliding w air
     bool showCollisionDebug = false;
     std::vector<std::shared_ptr<Object3D>> debugObjects;
 
@@ -287,7 +285,7 @@ int main() {
     bool isResetting = false;
     float resetFadeTimer = 0.0f;
     float fadeOpacity = 0.0f;
-    const float fadeDuration = 0.5f; // 0.5s fade in, 0.5s fade out = 1.0s total
+    const float fadeDuration = 0.5f; // 0.5s fade in, 0.5s fade out = 1.0s total think this is smooth enough
     
     // Create overlay scene with orthographic camera for fullscreen fade
     Scene overlayScene;
@@ -330,12 +328,12 @@ int main() {
     logFile << "[init] trackMarks constructed" << std::endl;
     // Spawn marks 1.5x quicker: reduce distance (0.6 / 1.5 ≈ 0.4)
     trackMarks.setSpawnDistance(0.4f);
-    trackMarks.setLifetime(3.f);       // disappear after 3 seconds
+    trackMarks.setLifetime(3.f);       // disappear after 3 seconds they kinda look invisible before that but whatever
 
-    // --- ImGui UI (persistent context) ---
+    // --- ImGui UI  ---
     ImguiFunctionalContext ui(canvas.windowPtr(), [&] {
         ImGui::SetNextWindowPos({0, 0}, 0, {0, 0});
-        ImGui::SetNextWindowSize({690, 120}, 0); // Further reduced height
+        ImGui::SetNextWindowSize({690, 120}, 0); // reduced height cus i just have 2 thingys in ther rn
         ImGui::Begin("Excavator UI");
         ImGui::SetWindowFontScale(1.5f); // Increase text size
         ImGui::Text("Coins collected: %d", coinManager.getCollectedCount());
@@ -345,7 +343,7 @@ int main() {
         }
         ImGui::End();
     });
-    // Capture mouse so camera orbit doesn't move while interacting with UI
+    // Capture mouse so camera orbit doesn't move while interacting with UI cus it was pissing me off
     IOCapture imguiCapture{};
     imguiCapture.preventMouseEvent = [] { return ImGui::GetIO().WantCaptureMouse; };
     canvas.setIOCapture(&imguiCapture);
@@ -353,13 +351,13 @@ int main() {
 
     // --- Reset game state function ---
     std::function<void()> resetGameState = [&]() {
-        if (isResetting) return; // Prevent multiple resets
+        if (isResetting) return; // Prevent multiple resets 
         std::cout << "Starting reset fade..." << std::endl;
         isResetting = true;
         resetFadeTimer = 0.0f;
     };
     
-    // Actual reset logic (called when fade is complete)
+    // Actual reset logic (called when fade is complete so it doesnt look janky and wierd)
     auto performReset = [&]() {
         std::cout << "Performing reset..." << std::endl;
         
@@ -595,7 +593,7 @@ int main() {
             prevAngle = newAngle;
         };
 
-        // Boom (R/F)
+        // Boom (R/F) (idk if i should change the controlls cus they ffel a little unnatural well see)
         float boomAngle = excavator.getBoomAngle();
         updateJoint(rDown, fDown, 0.5f, boomAngle, prevBoomAngle,
                    [&](float a) { excavator.setBoomAngle(a); }, 0.5f, 0.45f);
@@ -633,7 +631,7 @@ int main() {
         if (!pileGone && !excavator.isBucketLoaded() && digZone.isInZone(bucketPos)) {
             excavator.loadBucket();
             // Shrink the dig pile a bit and update its collider hull
-            // Aim for ~5 scoops to nearly clear the pile (down to ~5% scale)
+            // Aim for ~5 scoops to nearly clear the pile (down to ~5% scale)(maybe lower 5 is a bit many whem its driving this painfully slow, idek tho looks unnatural)
             // Slightly faster: ~5 scoops target, a touch stronger than 0.20
             // f=0.21 => per-scoop scale=0.79, volume factor ≈ 0.79^3 ≈ 0.493
             const float digFraction = 0.21f;

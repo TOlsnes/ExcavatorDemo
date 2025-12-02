@@ -199,7 +199,7 @@ void Excavator::buildHierarchy_() {
     rightTrackMeshes_[0]->name = "rightTrack_0";
     rightTrackMeshes_[0]->visible = true;
     
-    // Don't mirror - let it use its natural position from the OBJ
+    // Don't mirror - let it use its natural position from the OBJ cus mirroring was causing issues
     // rightTrackMeshes_[0]->scale.x = -1.0f;
     
     rightTrackPivot_->add(rightTrackMeshes_[0]);
@@ -258,20 +258,17 @@ void Excavator::buildHierarchy_() {
 
     // Add boom mesh relative to its pivot
     arm1Mesh_->name = "boom";
-    // If your boom mesh's origin is at the pin, no offset needed
-    // If not, adjust position so rotation swings correctly
     boomPivot_->add(arm1Mesh_);
 
     // --- Stick Pivot (at end of boom) ---
     stickPivot_ = Object3D::create();
     stickPivot_->name = "stickPivot";
     // After root rotation (-90 deg around X), the boom's length axis maps to +Y
-    // Place the stick pivot along +Y roughly at the boom's end
     stickPivot_->position.set(-150.0f, 5.0f, 100.0f); // Adjust to boom length
     boomPivot_->add(stickPivot_);
 
     arm2Mesh_->name = "stick";
-    // Arm2 re-exported with origin at hinge: don't auto-align; allow pivot nudging instead
+    // Arm2 re-exported with origin at hinge, had to redo it allin fusion cus ts is dumbbb
     arm2Mesh_->position.z += stickNudgeZ_;
     stickPivot_->add(arm2Mesh_);
 
