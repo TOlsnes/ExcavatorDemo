@@ -1,6 +1,7 @@
 #include "CollisionWorld.hpp"
 #include <threepp/threepp.hpp>
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <iostream>
 
