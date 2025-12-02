@@ -18,7 +18,7 @@ void CoinManager::spawnCoins(int count, float arenaRadius) {
     
     auto coinGeometry = threepp::CylinderGeometry::create(0.5f, 0.5f, 0.1f, 16);
     auto coinMaterial = threepp::MeshStandardMaterial::create();
-    coinMaterial->color.setHex(0xFFD700); // Gold color
+    coinMaterial->color.setHex(0xFFD700); // Gold 
     coinMaterial->metalness = 0.8f;
     coinMaterial->roughness = 0.2f;
     

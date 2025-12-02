@@ -8,6 +8,8 @@
 #include <threepp/objects/Group.hpp>
 #include "Settings.hpp"
 
+// Ensure Group is not a template or provide template arguments if needed
+
 class ParticleSystem;
 
 namespace threepp {

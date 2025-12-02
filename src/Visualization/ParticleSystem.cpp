@@ -6,7 +6,7 @@ using namespace threepp;
 
 ParticleSystem::ParticleSystem(Scene& scene)
     : scene_(scene) {
-    // Create shared geometries for all particles
+    // shared geometries for all particles
     sphereGeometry_ = SphereGeometry::create(0.05f, 6, 6); // Small sphere, low poly
     pyramidGeometry_ = ConeGeometry::create(0.05f, 0.1f, 4); // 4-sided cone = pyramid
     boxGeometry_ = BoxGeometry::create(0.08f, 0.08f, 0.08f); // Small box
@@ -23,7 +23,7 @@ void ParticleSystem::spawnParticle(const Vector3& position) {
     p.lifetime = 0.0f;
     p.maxLifetime = 1.0f;
     
-    // Add random offset to position
+    // Add random offset to position so its not just a line
     static std::random_device rd;
     static std::mt19937 gen(rd());
     static std::uniform_real_distribution<float> dis(-0.1f, 0.1f);
@@ -31,7 +31,7 @@ void ParticleSystem::spawnParticle(const Vector3& position) {
     
     Vector3 randomPos = position;
     randomPos.x += dis(gen);
-    randomPos.y += dis(gen) * 0.5f; // Less vertical randomness
+    randomPos.y += dis(gen) * 0.5f; // Less vertical randomness cus i dont want it being a cone
     randomPos.z += dis(gen);
     
     // Randomly select geometry type
@@ -64,7 +64,6 @@ void ParticleSystem::update(float deltaTime) {
     for (auto& p : particles_) {
         p.lifetime += deltaTime;
         
-        // Calculate fade: 1.0 at start, 0.0 at maxLifetime
         float normalizedLife = p.lifetime / p.maxLifetime;
         float opacity = 1.0f - normalizedLife;
         opacity = std::max(0.0f, opacity);
@@ -74,7 +73,7 @@ void ParticleSystem::update(float deltaTime) {
             mat->opacity = opacity * 0.8f; // Scale to max 0.8
         }
         
-        // Optional: slight upward drift
+        // Slight upward drift cus i can
         p.mesh->position.y += deltaTime * 0.1f;
     }
     

@@ -28,7 +28,7 @@ void DumpZone::recordDump() {
 void DumpZone::createVisual() {
     m_visual = Group::create();
     
-    // Create a platform/marker for the dump zone (light gray)
+    // Create a platform/marker for the dump zone soyou can see it before dumpint the first time
     auto platformGeom = CylinderGeometry::create(m_radius, m_radius, 0.2f, 16);
     auto platformMat = MeshPhongMaterial::create();
     platformMat->color = Color(0.7f, 0.7f, 0.7f); // Light gray platform
@@ -52,7 +52,7 @@ void DumpZone::createVisual() {
 void DumpZone::updatePileHeight() {
     if (!m_pileMesh) return;
     
-    // Grow pile height with each dump (0.3 units per dump)
+    // Grow pile height with each dump ADJUST HERE CUS IT LOOKS DUMB RN
     float height = 0.01f + m_dumpCount * 0.3f;
     
     // Recreate geometry with new height
