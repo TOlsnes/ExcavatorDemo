@@ -160,3 +160,5 @@ There is a LOT to improve on here. First of all i think as i got lazier with my 
 2. Collision detection in Collision world (especially the part that pushes the excavator away if its too close (288-314): https://gamedev.net/forums/topic/715956-aabb-collision/
 
 3. Convex hull collision (this one helped me visualize what everything actually ment when it came to collision) https://stackoverflow.com/questions/56912376/3d-collision-detection-convex-hull-vs-convex-hull-need-position-and-normal
+
+4. The tests are mainly using Github copilot and this: https://github.com/catchorg/Catch2
