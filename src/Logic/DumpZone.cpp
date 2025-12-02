@@ -1,4 +1,5 @@
 #include "DumpZone.hpp"
+#include <cmath>
 
 using namespace threepp;
 
