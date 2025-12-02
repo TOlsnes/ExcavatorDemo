@@ -3,6 +3,7 @@
 #include <threepp/math/Vector3.hpp>
 #include <threepp/math/Vector2.hpp>
 #include <vector>
+#include <memory>
 
 namespace threepp {
     class Object3D;
