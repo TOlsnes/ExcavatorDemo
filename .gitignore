@@ -1,4 +1,5 @@
 # Build and IDE folders
+# this thing is entirely github copilot btw
 build/
 cmake-build-debug/
 CMakeFiles/

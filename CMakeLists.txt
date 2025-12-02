@@ -17,6 +17,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(threepp)
 
+# Catch2 for testing
+FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.5.1
+)
+FetchContent_MakeAvailable(Catch2)
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+
 # Dear ImGui
 FetchContent_Declare(
         imgui
@@ -70,3 +79,54 @@ target_compile_definitions(main PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLAD)
 if (MSVC)
     target_compile_definitions(main PRIVATE NOMINMAX)
 endif()
+
+# ========================================
+# Tests
+# ========================================
+enable_testing()
+
+# Create a library for testable components (excludes main())
+add_library(blocks_lib STATIC
+        # Visualization
+        src/Visualization/Renderer.cpp
+        src/Visualization/ParticleSystem.cpp
+        src/Visualization/TrackMarkManager.cpp
+        src/Visualization/World.cpp
+        # Logic
+        src/Logic/InputManager.cpp
+        src/Logic/Excavator.cpp
+        src/Logic/ObjectSpawner.cpp
+        src/Logic/CollisionWorld.cpp
+        src/Logic/DigZone.cpp
+        src/Logic/DumpZone.cpp
+        src/Logic/AudioManager.cpp
+        src/Logic/Coin.cpp
+        src/Logic/CoinManager.cpp
+)
+
+target_include_directories(blocks_lib
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include        
+        $<TARGET_PROPERTY:threepp::threepp,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_link_libraries(blocks_lib PUBLIC threepp::threepp imgui)
+target_compile_definitions(blocks_lib PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
+
+if (MSVC)
+    target_compile_definitions(blocks_lib PUBLIC NOMINMAX)
+endif()
+
+# Test executable
+add_executable(blocks_tests
+        tests/test_main.cpp
+        tests/test_collision.cpp
+        tests/test_particle.cpp
+        tests/test_coin.cpp
+)
+
+target_link_libraries(blocks_tests PRIVATE blocks_lib Catch2::Catch2WithMain)
+
+include(CTest)
+include(Catch)
+catch_discover_tests(blocks_tests)
