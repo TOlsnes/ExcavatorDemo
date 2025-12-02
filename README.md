@@ -15,7 +15,7 @@ Threepp Excavator is a 3D simulation demo featuring an articulated excavator wit
 - **Dig/Dump Gameplay**: Scoop dirt from pile and deposit in designated dump zone
 - **ImGui UI**: Real-time coin counter and adjustable master volume
 - **Castle Environment**: Walls, doors, and perimeter rails with collision
-- **Camera Controls**: Mouse-drag orbit camera with zoom
+- **Camera Controls**: Mouse-drag orbit camera
 
 <h2>Controls</h2>
 
