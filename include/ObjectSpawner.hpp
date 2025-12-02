@@ -12,14 +12,14 @@
 class ObjectSpawner {
 public:
     struct SpawnConfig {
-        float arenaRadius{30.0f};          // Radius of circular spawn area
-        int smallObjectCount{100};         // Small debris (rocks, chunks)
-        int mediumObjectCount{30};         // Medium objects (barrels, crates)
-        int largeObjectCount{8};           // Large obstacles (boulders, blocks)
-        unsigned int randomSeed{12345};    // For reproducible generation
+        float arenaRadius = 30.0f;          // Radius of circular spawn area
+        int smallObjectCount = 100;         // Small debris (rocks, chunks)
+        int mediumObjectCount = 30;         // Medium objects (barrels, crates)
+        int largeObjectCount = 8;           // Large obstacles (boulders, blocks)
+        unsigned int randomSeed = 12345;    // For reproducible generation
     };
 
-    ObjectSpawner(threepp::Scene& scene, const SpawnConfig& config = SpawnConfig{});
+    ObjectSpawner(threepp::Scene& scene, const SpawnConfig& config = {});
 
     // Generate and place all environment objects
     void generateEnvironment();
